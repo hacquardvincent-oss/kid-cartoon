@@ -30,6 +30,7 @@
 <nav class="mainnav" id="mainnav" aria-label="Rubriques">
   <button data-nav="histoires">📖 Histoires</button>
   <button data-nav="jeux">🎮 Jeux</button>
+  <button data-nav="famille">👨‍👩‍👧 Famille</button>
 </nav>
 
 <nav class="tabs" id="tabs" aria-label="Univers"></nav>
@@ -46,6 +47,7 @@
         <nav class="cover-nav" id="coverNav" aria-label="Rubriques">
           <button data-nav="histoires">📖 Histoires</button>
           <button data-nav="jeux">🎮 Jeux</button>
+          <button data-nav="famille">👨‍👩‍👧 Famille</button>
         </nav>
       </div>
       <div class="cover-art" id="coverArt">
@@ -92,6 +94,15 @@
     <div class="cf-dots" id="cfDots"></div>
   </section>
 
+  <!-- LA FAMILLE : le créateur de personnages -->
+  <section class="view" id="viewFamille" hidden>
+    <div class="uni-head">
+      <h2>👨‍👩‍👧 Votre famille</h2>
+      <p>Les personnages de vos histoires — créés ici, jamais ailleurs.</p>
+    </div>
+    <div id="familleStage"></div>
+  </section>
+
   <!-- LES JEUX -->
   <section class="view" id="viewGames" hidden>
     <div class="uni-head">
@@ -121,6 +132,7 @@
 
 <script src="assets/js/art.js"></script>
 <script src="assets/js/scene.js"></script>
+<script src="assets/js/perso.js"></script>
 <script src="assets/js/stories.js"></script>
 <script src="assets/js/games.js"></script>
 <script src="assets/js/app.js"></script>

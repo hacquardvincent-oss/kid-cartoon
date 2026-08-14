@@ -884,6 +884,96 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
   .pages { animation: none; }
 }
 
+/* ============================================================
+   LE CRÉATEUR DE PERSONNAGES
+
+   C'est le seul écran de l'application où l'on a le droit d'écrire des
+   mots : c'est un écran de parent. Mais l'enfant regarde par-dessus
+   l'épaule et montre du doigt, donc tout ce qui se choisit est une
+   grande pastille de couleur ou une image — jamais une liste déroulante.
+   ============================================================ */
+.famille-grille {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  margin-bottom: 16px;
+}
+.perso-carte {
+  font-family: inherit; cursor: pointer; text-align: center;
+  background: var(--page); border: 3px solid var(--ink); border-radius: 16px;
+  box-shadow: 0 3px 0 var(--ink); padding: 6px 4px 8px; color: var(--ink);
+  transition: transform .12s, box-shadow .12s;
+}
+.perso-carte:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.perso-vignette { width: 100%; aspect-ratio: 1; }
+.perso-vignette svg { width: 100%; height: 100%; display: block; }
+.perso-nom {
+  font-weight: 700; font-size: 15px; margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.perso-lien { font-size: 11px; color: var(--ink-soft); }
+.perso-ajout { display: flex; flex-direction: column; justify-content: center; }
+.perso-plus { font-size: 42px; line-height: 1; color: var(--ink-soft); }
+
+/* l'aperçu : il est grand, et il est toujours au-dessus du réglage qu'on
+   est en train de changer */
+.perso-apercu {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--page); border-bottom: 3px solid var(--ink);
+  margin: -12px -14px 12px; padding: 6px 0 4px;
+  height: 178px;
+}
+.perso-apercu svg { width: 100%; height: 100%; display: block; }
+
+.reglage { margin-bottom: 14px; }
+.reglage-titre {
+  display: block; margin: 0 2px 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.reglage-aide { margin: -2px 2px 8px; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+.reglage-choix { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.pastille {
+  font-family: inherit; cursor: pointer; padding: 0;
+  min-width: 46px; height: 46px;
+  background: var(--page); border: 3px solid var(--ink); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-size: 13px; font-weight: 600;
+  transition: transform .1s, box-shadow .1s;
+}
+.pastille i { display: block; width: 28px; height: 28px; border-radius: 8px; }
+.pastille span { padding: 0 10px; white-space: nowrap; }
+.pastille-large { min-width: 0; }
+.pastille.is-active {
+  box-shadow: 0 0 0 3px var(--jaune); background: #fff;
+  transform: translateY(-1px);
+}
+
+.perso-prenom {
+  font-family: inherit; width: 100%; box-sizing: border-box;
+  font-size: 19px; font-weight: 700; color: var(--ink);
+  padding: 11px 14px; background: var(--page);
+  border: 3px solid var(--ink); border-radius: 12px;
+}
+.perso-prenom.manque { border-color: var(--rouge); background: #fff0ec; }
+.archetype-dit {
+  margin: 8px 2px 0; font-size: 14px; line-height: 1.5;
+  color: var(--ink); font-style: italic;
+}
+
+.perso-actions {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  margin: 22px 0 10px; padding-top: 16px; border-top: 2px dashed var(--ink-soft);
+}
+.chip-danger { color: var(--rouge); }
+.perso-confirme {
+  margin-top: 14px; padding: 12px 14px;
+  background: #fff0ec; border: 3px solid var(--rouge); border-radius: 14px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.perso-confirme p { margin: 0 0 6px; flex: 1 1 100%; }
+.perso-confirme .petit { font-size: 13px; color: var(--ink-soft); }
+
 </style>
 
 <div class="grain-layer" aria-hidden="true"></div>
@@ -899,6 +989,7 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
 <nav class="mainnav" id="mainnav" aria-label="Rubriques">
   <button data-nav="histoires">📖 Histoires</button>
   <button data-nav="jeux">🎮 Jeux</button>
+  <button data-nav="famille">👨‍👩‍👧 Famille</button>
 </nav>
 
 <nav class="tabs" id="tabs" aria-label="Univers"></nav>
@@ -915,6 +1006,7 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
         <nav class="cover-nav" id="coverNav" aria-label="Rubriques">
           <button data-nav="histoires">📖 Histoires</button>
           <button data-nav="jeux">🎮 Jeux</button>
+          <button data-nav="famille">👨‍👩‍👧 Famille</button>
         </nav>
       </div>
       <div class="cover-art" id="coverArt">
@@ -959,6 +1051,15 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
     </div>
 
     <div class="cf-dots" id="cfDots"></div>
+  </section>
+
+  <!-- LA FAMILLE : le créateur de personnages -->
+  <section class="view" id="viewFamille" hidden>
+    <div class="uni-head">
+      <h2>👨‍👩‍👧 Votre famille</h2>
+      <p>Les personnages de vos histoires — créés ici, jamais ailleurs.</p>
+    </div>
+    <div id="familleStage"></div>
   </section>
 
   <!-- LES JEUX -->
@@ -1066,6 +1167,8 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
 
   var COIFFURES = ['couettes', 'tresse', 'deuxtresses', 'longs', 'boucles',
     'carre', 'queue', 'queuehaute'];
+  var LISTE_HAUTS = ['robe', 'teeshirt', 'pull'];
+  var LISTE_BAS = ['aucun', 'pantalon', 'short', 'jupe'];
 
   /* ---------- la fabrique enfant : silhouette, coiffure, garde-robe ---------- */
   function cheveuxDe(style, cheveux) {
@@ -1199,70 +1302,108 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
     return s;
   }
 
-  function brasEnfant(pose, teint) {
-    if (pose === 'salue') {
-      return limb('M -26,-124 C -48,-116 -60,-104 -62,-90', teint, 12) +
-        limb('M 26,-126 C 56,-136 80,-158 86,-182', teint, 12) +
-        hand(-64, -86, teint, 10) + hand(90, -188, teint, 11);
-    }
-    if (pose === 'brasenlair' || pose === 'saute') {
-      return limb('M -26,-124 C -56,-136 -80,-158 -86,-182', teint, 12) +
-        limb('M 26,-124 C 56,-136 80,-158 86,-182', teint, 12) +
-        hand(-90, -188, teint, 10) + hand(90, -188, teint, 10);
-    }
-    if (pose === 'montre') {
-      return limb('M -26,-124 C -48,-114 -58,-100 -60,-88', teint, 12) +
-        limb('M 26,-126 C 54,-130 76,-138 96,-146', teint, 12) +
-        hand(-62, -84, teint, 10) + hand(100, -148, teint, 10);
-    }
-    if (pose === 'tient') {
-      return limb('M -26,-124 C -46,-120 -58,-112 -58,-100', teint, 12) +
-        limb('M 26,-124 C 46,-120 58,-112 58,-100', teint, 12) +
-        hand(-60, -96, teint, 10) + hand(60, -96, teint, 10);
-    }
-    if (pose === 'magie') {
-      return limb('M -26,-124 C -52,-132 -72,-146 -80,-164', teint, 12) +
-        limb('M 26,-126 C 52,-134 74,-150 82,-168', teint, 12) +
-        hand(-84, -170, teint, 10) + hand(86, -174, teint, 10);
-    }
-    if (pose === 'nage') {
-      return limb('M -26,-124 C -50,-134 -66,-132 -78,-126', teint, 12) +
-        limb('M 26,-124 C 50,-134 66,-132 78,-126', teint, 12) +
-        hand(-82, -124, teint, 10) + hand(82, -124, teint, 10);
-    }
-    if (pose === 'hausse') {
-      return limb('M -26,-126 C -50,-132 -66,-126 -72,-116', teint, 12) +
-        limb('M 26,-126 C 50,-132 66,-126 72,-116', teint, 12) +
-        hand(-76, -114, teint, 10) + hand(76, -114, teint, 10);
-    }
-    return limb('M -26,-124 C -48,-116 -60,-104 -62,-90', teint, 12) +
-      limb('M 26,-124 C 48,-116 60,-104 62,-90', teint, 12) +
-      hand(-64, -86, teint, 10) + hand(64, -86, teint, 10);
+  /* ------------------------------------------------------------
+     LA GARDE-ROBE
+
+     Un vêtement posé sur un membre, c'est le MÊME tracé redessiné, dont on
+     ne montre que le début : `pathLength="100"` normalise la longueur, donc
+     `part` est un pourcentage. Une manche courte, c'est 34 ; un pantalon,
+     c'est 86. Et surtout : ça marche dans n'importe quelle pose, sans avoir
+     à couper une courbe de Bézier à la main — ce qui aurait voulu dire un
+     vêtement par pose, et neuf occasions de se tromper.
+
+     Le bout coupé garde son bouchon rond d'encre : c'est l'ourlet.
+     ------------------------------------------------------------ */
+  function membreHabille(d, couleur, w, part) {
+    var coupe = ' pathLength="100" stroke-dasharray="' + part + ' 100"';
+    return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w + 7) +
+      '" stroke-linecap="round" stroke-linejoin="round"' + coupe + '/>' +
+      '<path d="' + d + '" fill="none" stroke="' + couleur + '" stroke-width="' + w +
+      '" stroke-linecap="round" stroke-linejoin="round"' + coupe + '/>';
   }
 
-  function jambesEnfant(pose, teint) {
-    if (pose === 'saute') {
-      return limb('M -12,-58 C -24,-40 -38,-32 -48,-28', teint, 14) +
-        limb('M 12,-58 C 24,-40 38,-34 48,-30', teint, 14) +
-        '<ellipse cx="-52" cy="-26" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4" transform="rotate(-25 -52 -26)"/>' +
-        '<ellipse cx="52" cy="-28" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4" transform="rotate(25 52 -28)"/>';
+  function chaussure(x, y, rot) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="15" ry="9" fill="' + CHAUSSURE +
+      '" stroke="' + INK + '" stroke-width="4"' +
+      (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '/>';
+  }
+
+  /* Les tracés des membres, sortis des fonctions : le vêtement a besoin de
+     les redessiner, et deux copies d'un même tracé finissent toujours par
+     diverger. */
+  var BRAS_ENFANT = {
+    debout: { g: 'M -26,-124 C -48,-116 -60,-104 -62,-90', d: 'M 26,-124 C 48,-116 60,-104 62,-90',
+      mg: [-64, -86, 10], md: [64, -86, 10] },
+    salue: { g: 'M -26,-124 C -48,-116 -60,-104 -62,-90', d: 'M 26,-126 C 56,-136 80,-158 86,-182',
+      mg: [-64, -86, 10], md: [90, -188, 11] },
+    brasenlair: { g: 'M -26,-124 C -56,-136 -80,-158 -86,-182', d: 'M 26,-124 C 56,-136 80,-158 86,-182',
+      mg: [-90, -188, 10], md: [90, -188, 10] },
+    montre: { g: 'M -26,-124 C -48,-114 -58,-100 -60,-88', d: 'M 26,-126 C 54,-130 76,-138 96,-146',
+      mg: [-62, -84, 10], md: [100, -148, 10] },
+    tient: { g: 'M -26,-124 C -46,-120 -58,-112 -58,-100', d: 'M 26,-124 C 46,-120 58,-112 58,-100',
+      mg: [-60, -96, 10], md: [60, -96, 10] },
+    magie: { g: 'M -26,-124 C -52,-132 -72,-146 -80,-164', d: 'M 26,-126 C 52,-134 74,-150 82,-168',
+      mg: [-84, -170, 10], md: [86, -174, 10] },
+    nage: { g: 'M -26,-124 C -50,-134 -66,-132 -78,-126', d: 'M 26,-124 C 50,-134 66,-132 78,-126',
+      mg: [-82, -124, 10], md: [82, -124, 10] },
+    hausse: { g: 'M -26,-126 C -50,-132 -66,-126 -72,-116', d: 'M 26,-126 C 50,-132 66,-126 72,-116',
+      mg: [-76, -114, 10], md: [76, -114, 10] }
+  };
+  BRAS_ENFANT.saute = BRAS_ENFANT.brasenlair;
+
+  var JAMBES_ENFANT = {
+    debout: { g: 'M -13,-58 L -13,-16', d: 'M 13,-58 L 13,-16',
+      pieds: chaussure(-15, -11) + chaussure(15, -11), hanche: [0, -58] },
+    saute: { g: 'M -12,-58 C -24,-40 -38,-32 -48,-28', d: 'M 12,-58 C 24,-40 38,-34 48,-30',
+      pieds: chaussure(-52, -26, -25) + chaussure(52, -28, 25), hanche: [0, -58] },
+    court: { g: 'M -10,-58 C -22,-42 -32,-24 -34,-12', d: 'M 10,-58 C 20,-44 24,-28 22,-12',
+      pieds: chaussure(-38, -9) + chaussure(26, -9), hanche: [0, -58] },
+    assis: { g: 'M -6,-24 C 20,-24 40,-22 46,-6 C 49,4 50,16 50,26',
+      d: 'M 6,-16 C 32,-16 54,-14 60,2 C 63,12 64,22 64,32',
+      pieds: chaussure(54, 30) + chaussure(68, 36), hanche: [-2, -22] },
+    nage: { pieds: '', hanche: [0, -58] }
+  };
+
+  /* Le haut : trois coupes, qui se distinguent à l'ourlet et à la manche.
+     `part` est la longueur de manche. */
+  var HAUTS = {
+    robe: { d: 'M -28,-138 C -34,-112 -46,-80 -50,-56 L 50,-56 C 46,-80 34,-112 28,-138 Z',
+      ourlet: -64, bordX: 47, manche: 34 },
+    teeshirt: { d: 'M -28,-138 C -32,-118 -35,-98 -36,-80 L 36,-80 C 35,-98 32,-118 28,-138 Z',
+      ourlet: -88, bordX: 33, manche: 34 },
+    pull: { d: 'M -29,-140 C -34,-118 -38,-98 -39,-78 L 39,-78 C 38,-98 34,-118 29,-140 Z',
+      ourlet: -86, bordX: 36, manche: 86 }
+  };
+
+  /* Le bas : la hanche est un morceau plein posé au sommet des jambes, et
+     les jambes sont rhabillées sur une partie de leur longueur. La jupe,
+     elle, n'habille pas les jambes du tout. */
+  var BAS = {
+    pantalon: { hanche: 'M -22,-84 L 22,-84 L 21,-50 L -21,-50 Z', part: 84 },
+    short: { hanche: 'M -23,-84 L 23,-84 L 24,-46 L -24,-46 Z', part: 38 },
+    jupe: { hanche: 'M -25,-84 L 25,-84 L 46,-44 L -46,-44 Z', part: 0 }
+  };
+
+  function brasEnfant(pose, teint, manche) {
+    var b = BRAS_ENFANT[pose] || BRAS_ENFANT.debout;
+    var s = limb(b.g, teint, 12) + limb(b.d, teint, 12);
+    if (manche && manche.part) {
+      s += membreHabille(b.g, manche.couleur, 15, manche.part) +
+        membreHabille(b.d, manche.couleur, 15, manche.part);
     }
-    if (pose === 'court') {
-      return limb('M -10,-58 C -22,-42 -32,-24 -34,-12', teint, 14) +
-        limb('M 10,-58 C 20,-44 24,-28 22,-12', teint, 14) +
-        '<ellipse cx="-38" cy="-9" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-        '<ellipse cx="26" cy="-9" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
+    return s + hand(b.mg[0], b.mg[1], teint, b.mg[2]) + hand(b.md[0], b.md[1], teint, b.md[2]);
+  }
+
+  function jambesEnfant(pose, teint, bas) {
+    var j = JAMBES_ENFANT[pose] || JAMBES_ENFANT.debout;
+    if (!j.g) return '';
+    var s = limb(j.g, teint, 14) + limb(j.d, teint, 14);
+    if (bas && BAS[bas.coupe] && BAS[bas.coupe].part) {
+      var part = BAS[bas.coupe].part;
+      s += membreHabille(j.g, bas.couleur, 17, part) +
+        membreHabille(j.d, bas.couleur, 17, part);
     }
-    if (pose === 'assis') {
-      return limb('M -6,-24 C 20,-24 40,-22 46,-6 C 49,4 50,16 50,26', teint, 14) +
-        limb('M 6,-16 C 32,-16 54,-14 60,2 C 63,12 64,22 64,32', teint, 14) +
-        '<ellipse cx="54" cy="30" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-        '<ellipse cx="68" cy="36" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
-    }
-    if (pose === 'nage') return '';
-    return limb('M -13,-58 L -13,-16', teint, 14) + limb('M 13,-58 L 13,-16', teint, 14) +
-      '<ellipse cx="-15" cy="-11" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-      '<ellipse cx="15" cy="-11" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
+    return s + j.pieds;
   }
 
   /* La même fabrique sert à l'enfant et à l'adulte : ce qui les sépare, ce
@@ -1274,14 +1415,22 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
     var teint = o.teint || '#f6cba6';
     var cheveux = o.cheveux || '#7b4a2d';
     var vetement = o.vetement || '#3ec9c9';
+    var H = HAUTS[o.haut] || HAUTS.robe;
+    /* on habille le bas d'abord, le haut par-dessus : une robe sur un
+       pantalon, c'est une tenue d'enfant, et l'ordre suffit à la dessiner */
     var pose = o.pose || 'debout';
+    var bas = (BAS[o.bas] && pose !== 'nage')
+      ? { coupe: o.bas, couleur: o.couleurBas || shade(vetement, -0.34) } : null;
     var assis = pose === 'assis';
     var k = o.adulte ? 0.86 : 1;
     var s = '';
-    if (pose !== 'nage') s += jambesEnfant(pose, teint);
-    var t = brasEnfant(pose, teint);
-    t += U(['<path d="M -28,-138 C -34,-112 -46,-80 -50,-56 L 50,-56 C 46,-80 34,-112 28,-138 Z" fill="%F%" %S%/>'], vetement, 9);
-    if (o.bord) t += line('M -47,-68 L 47,-68', o.bord, 5);
+    if (pose !== 'nage') s += jambesEnfant(pose, teint, bas);
+    var t = brasEnfant(pose, teint, { couleur: vetement, part: H.manche });
+    if (bas && BAS[bas.coupe]) {
+      t += U(['<path d="' + BAS[bas.coupe].hanche + '" fill="%F%" %S%/>'], bas.couleur, 8);
+    }
+    t += U(['<path d="' + H.d + '" fill="%F%" %S%/>'], vetement, 9);
+    if (o.bord) t += line('M ' + (-H.bordX) + ',' + H.ourlet + ' L ' + H.bordX + ',' + H.ourlet, o.bord, 5);
     t += line('M -20,-136 q 20,16 40,0', shade(vetement, -0.25), 4);
     var tete = 'translate(0,-130)' + (k !== 1 ? ' scale(' + k + ')' : '');
     t += gTete(tete, teteEnfant({
@@ -2722,6 +2871,8 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
     objets: P,
     decors: BG,
     coiffures: COIFFURES,
+    hauts: LISTE_HAUTS,
+    bas: LISTE_BAS,
     poses: POSES,
     humeurs: HUMEURS,
     INK: INK,
@@ -3215,6 +3366,492 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
 })(window);
 
 /* ============================================================
+   perso.js — le créateur de personnages, et leur rangement
+
+   LE CADRE EST VOLONTAIREMENT FERMÉ
+
+   On ne propose pas une roue chromatique et un curseur de taille. On
+   propose sept teints, huit couleurs de cheveux, dix couleurs de
+   vêtement. Un espace de création borné donne de meilleurs résultats
+   qu'un espace ouvert — l'enfant choisit vite, le parent ne bricole pas,
+   et surtout : tout ce qui sort d'ici est dessinable et mesurable par le
+   moteur, donc plaçable par la mise en scène.
+
+   L'ARCHÉTYPE EST LE CHAMP LE PLUS IMPORTANT
+
+   Le prénom sert à l'enfant. La silhouette sert au dessin. Mais c'est
+   l'archétype qui décide de ce que le personnage FAIT dans une histoire.
+   Les canevas ne sont pas écrits pour « le héros » — ça produit une prose
+   plate — mais pour des tempéraments. Six, pas plus : c'est ce chiffre,
+   et pas le nombre de personnages, qui fixe le volume d'écriture.
+   ============================================================ */
+(function (global) {
+  'use strict';
+
+  var CLE = 'kidcartoon.v1.famille';
+
+  /* Huit personnages : une grille qui tient sur un écran de téléphone sans
+     défilement. Au-delà, l'enfant ne les reconnaît plus, il les cherche. */
+  var MAX = 8;
+
+  /* ------------------------------------------------------------
+     LES SIX ARCHÉTYPES
+
+     L'article est genré parce qu'une histoire a besoin d'écrire « il » ou
+     « elle » — mais le tempérament, lui, ne l'est pas : on peut donner
+     « la range-tout » à un papa et « le grognon » à une mamie. C'est
+     précisément ce qui permet d'écrire des phrases précises et de les
+     appliquer à n'importe quel personnage de n'importe quelle famille.
+     ------------------------------------------------------------ */
+  var ARCHETYPES = [
+    { id: 'grognon', nom: 'Grognon', emoji: '😠',
+      dit: 'Il râle, il dit non, il boude. C\'est lui qui fait les grosses colères — et qui apprend à souffler.' },
+    { id: 'timide', nom: 'Timide', emoji: '🙈',
+      dit: 'Elle n\'ose pas. C\'est elle qui apprend à demander, et qui découvre que ça marche.' },
+    { id: 'rapide', nom: 'Rapide', emoji: '💨',
+      dit: 'Il fonce avant de réfléchir. C\'est lui qui casse quelque chose — et qui le répare.' },
+    { id: 'curieuse', nom: 'Curieuse', emoji: '🔎',
+      dit: 'Elle demande pourquoi, tout le temps. C\'est elle qui entraîne les autres dehors.' },
+    { id: 'farceur', nom: 'Farceur', emoji: '😜',
+      dit: 'Il taquine pour rire. C\'est lui qui va trop loin, et qui doit dire pardon.' },
+    { id: 'rangetout', nom: 'Range-tout', emoji: '🧺',
+      dit: 'Elle veut que tout soit à sa place. C\'est elle qui apprend à prêter ses affaires.' }
+  ];
+
+  /* Le lien ne change rien au dessin : il sert à l'écriture (« Maman dit
+     non ») et au rangement de la grille. */
+  var LIENS = ['moi', 'maman', 'papa', 'frère', 'sœur', 'mamie', 'papi',
+    'copain', 'copine', 'doudou', 'imaginaire', 'animal'];
+
+  /* ------------------------------------------------------------
+     LES PALETTES
+     ------------------------------------------------------------ */
+  var PALETTES = {
+    teint: ['#f9dcbd', '#f6cba6', '#f2c49a', '#e8b98f', '#c9885c', '#a4683f', '#7a4a2c'],
+    cheveux: ['#f7dc8a', '#f0be48', '#c9702f', '#9a6a3c', '#6b4a33', '#4a2f22', '#2f2118', '#e4e2dc'],
+    vetement: ['#3ec9c9', '#e8746b', '#a98cf0', '#7ac6a8', '#f0a24a', '#5aa9e8',
+      '#e8436e', '#7ab648', '#f7c518', '#8a8f9a'],
+    bas: ['#4a6ea8', '#3f4a5c', '#c9702f', '#7a4a2c', '#4f7a5c', '#8a3f5c', '#e4e2dc', '#2f2118'],
+    poil: ['#c9a06a', '#8a8f9a', '#f2e2d0', '#6f9ed8', '#e0954e', '#4a3a2e', '#d8b8a0', '#a8c8b0'],
+    rond: ['#f0a24a', '#7ac6a8', '#a98cf0', '#e8746b', '#5aa9e8', '#f7c518', '#e895b8', '#8fd0a8']
+  };
+
+  /* Quels réglages a le droit d'exister sur quelle silhouette. C'est aussi
+     ce que le créateur affiche : on ne montre pas une coiffure à un chien. */
+  var SILHOUETTES = [
+    { id: 'enfant', nom: 'Enfant', champs: ['teint', 'cheveux', 'coiffure', 'haut', 'bas', 'accessoires'] },
+    { id: 'adulte', nom: 'Adulte', champs: ['teint', 'cheveux', 'coiffure', 'haut', 'bas', 'accessoires'] },
+    { id: 'bebe', nom: 'Bébé', champs: ['teint', 'cheveux', 'vetement'] },
+    { id: 'animal', nom: 'Animal', champs: ['poil', 'oreilles', 'queue'] },
+    { id: 'rond', nom: 'Doudou', champs: ['rond', 'forme', 'oreilles', 'museau'] }
+  ];
+
+  var OREILLES_ANIMAL = ['pointues', 'rondes', 'tombantes', 'longues'];
+  var OREILLES_ROND = ['rondes', 'longues', 'aucune'];
+  var FORMES_ROND = ['rond', 'ovale', 'poire', 'carre'];
+  var QUEUES = ['dressee', 'pompon', 'aucune'];
+  var ACCESSOIRES = [
+    { id: 'lunettes', nom: 'Lunettes', emoji: '👓' },
+    { id: 'couronne', nom: 'Couronne', emoji: '👑' },
+    { id: 'chapeau', nom: 'Chapeau', emoji: '🎩' },
+    { id: 'noeuds', nom: 'Nœuds', emoji: '🎀' },
+    { id: 'barrette', nom: 'Barrette', emoji: '📎' }
+  ];
+
+  /* ------------------------------------------------------------
+     LE RANGEMENT
+
+     Rien ne sort de l'appareil. C'est une promesse produit autant qu'une
+     simplification : une application pour enfants qui n'envoie rien n'a
+     presque rien à déclarer.
+     ------------------------------------------------------------ */
+  function lire() {
+    try {
+      var v = JSON.parse(localStorage.getItem(CLE) || '[]');
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+  function ecrire(liste) {
+    try { localStorage.setItem(CLE, JSON.stringify(liste)); } catch (e) { /* mode privé */ }
+    ecouteurs.forEach(function (f) { f(liste); });
+  }
+  var ecouteurs = [];
+
+  function id() {
+    return 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
+  }
+
+  function enregistrer(p) {
+    var liste = lire();
+    if (p.id) {
+      for (var i = 0; i < liste.length; i++) {
+        if (liste[i].id === p.id) { liste[i] = p; ecrire(liste); return p; }
+      }
+    }
+    if (liste.length >= MAX) return null;
+    p.id = id();
+    liste.push(p);
+    ecrire(liste);
+    return p;
+  }
+
+  function supprimer(pid) {
+    ecrire(lire().filter(function (p) { return p.id !== pid; }));
+  }
+
+  /* ------------------------------------------------------------
+     DU PERSONNAGE RANGÉ AU PERSONNAGE DESSINÉ
+
+     Le stockage garde l'identité (prénom, lien, archétype) à côté des
+     réglages de dessin. Le moteur, lui, ne veut que les réglages — et
+     surtout pas le prénom, qui changerait la signature de mesure et
+     ferait remesurer le même dessin pour rien.
+     ------------------------------------------------------------ */
+  function pourDessin(p, extra) {
+    var o = { t: p.silhouette }, k;
+    for (k in p.reglages) if (p.reglages.hasOwnProperty(k)) o[k] = p.reglages[k];
+    for (k in extra) if (extra.hasOwnProperty(k)) o[k] = extra[k];
+    return o;
+  }
+
+  function vignette(p, ds) {
+    return Art.vignette(pourDessin(p, { ds: ds || .62, dy: 186 }));
+  }
+
+  /* un personnage neuf, déjà présentable : on ne commence jamais devant
+     une silhouette grise */
+  function neuf(silhouette) {
+    var r = { enfant: {
+        teint: PALETTES.teint[1], cheveux: PALETTES.cheveux[4], coiffure: 'couettes',
+        vetement: PALETTES.vetement[0], haut: 'teeshirt', bas: 'pantalon', couleurBas: PALETTES.bas[0]
+      },
+      adulte: {
+        teint: PALETTES.teint[2], cheveux: PALETTES.cheveux[5], coiffure: 'carre',
+        vetement: PALETTES.vetement[3], haut: 'pull', bas: 'pantalon', couleurBas: PALETTES.bas[1]
+      },
+      bebe: { teint: PALETTES.teint[1], cheveux: PALETTES.cheveux[0], vetement: PALETTES.vetement[5] },
+      animal: { poil: PALETTES.poil[0], clair: '#f7e7cf', oreilles: 'tombantes' },
+      rond: { couleur: PALETTES.rond[0], forme: 'poire', oreilles: 'rondes', museau: true }
+    }[silhouette];
+    return { silhouette: silhouette, prenom: '', lien: 'copain', archetype: 'curieuse', reglages: r };
+  }
+
+  /* le poil clair suit le poil : un animal dont le museau ne s'éclaircit
+     pas avec sa fourrure a l'air malade */
+  function majClair(p) {
+    if (p.silhouette === 'animal') p.reglages.clair = Art.shade(p.reglages.poil, 0.55);
+  }
+
+  /* ============================================================
+     LE CRÉATEUR
+
+     C'est un écran de PARENT, contrairement au reste de l'application :
+     ici on a le droit d'écrire des mots. Mais l'enfant regarde par-dessus
+     l'épaule et montre du doigt, donc tout ce qui se choisit est une
+     grande pastille de couleur ou une image — jamais une liste déroulante.
+     ============================================================ */
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  }
+
+  function ouvrir(zone, onFini) {
+    var edition = null;      // le personnage en cours d'édition, ou null
+
+    function grille() {
+      zone.innerHTML = '';
+      var liste = lire();
+      zone.appendChild(el('p', 'hello',
+        liste.length
+          ? '<b>' + liste.length + '</b> personnage' + (liste.length > 1 ? 's' : '') +
+            ' — touche-le pour le changer.'
+          : 'Créez ensemble les personnages de vos histoires.'));
+
+      var g = el('div', 'famille-grille');
+      liste.forEach(function (p) {
+        var c = el('button', 'perso-carte');
+        var a = archetype(p.archetype);
+        c.innerHTML = '<div class="perso-vignette">' + vignette(p) + '</div>' +
+          '<div class="perso-nom">' + (p.prenom || '—') + '</div>' +
+          '<div class="perso-lien">' + p.lien + ' · ' + (a ? a.emoji + ' ' + a.nom : '') + '</div>';
+        c.onclick = function () { editer(p); };
+        g.appendChild(c);
+      });
+
+      if (liste.length < MAX) {
+        var plus = el('button', 'perso-carte perso-ajout',
+          '<div class="perso-plus">+</div><div class="perso-nom">Ajouter</div>');
+        plus.onclick = function () { choisirSilhouette(); };
+        g.appendChild(plus);
+      }
+      zone.appendChild(g);
+
+      if (liste.length) {
+        zone.appendChild(el('p', 'foot-note',
+          'Ces personnages deviennent les héros des histoires et des jeux. ' +
+          'Rien ne sort du téléphone.'));
+      }
+    }
+
+    function choisirSilhouette() {
+      zone.innerHTML = '';
+      zone.appendChild(el('p', 'hello', 'Quelle sorte de personnage ?'));
+      var g = el('div', 'famille-grille');
+      SILHOUETTES.forEach(function (s) {
+        var p = neuf(s.id);
+        var c = el('button', 'perso-carte');
+        c.innerHTML = '<div class="perso-vignette">' + vignette(p) + '</div>' +
+          '<div class="perso-nom">' + s.nom + '</div>';
+        c.onclick = function () { editer(p); };
+        g.appendChild(c);
+      });
+      zone.appendChild(g);
+      var retour = el('button', 'chip', '↩ Retour');
+      retour.onclick = grille;
+      zone.appendChild(retour);
+    }
+
+    function editer(p) {
+      edition = JSON.parse(JSON.stringify(p));
+      dessinerEditeur();
+    }
+
+    function dessinerEditeur() {
+      var p = edition;
+      var champs = silhouetteDe(p.silhouette).champs;
+      zone.innerHTML = '';
+
+      var apercu = el('div', 'perso-apercu');
+      zone.appendChild(apercu);
+      function majApercu() {
+        apercu.innerHTML = Art.vignette(pourDessin(p, { ds: .74, dy: 190 }));
+      }
+      majApercu();
+
+      /* une rangée de choix : une pastille par valeur */
+      function rangee(titre, valeurs, courant, poser, rendu) {
+        var bloc = el('div', 'reglage');
+        bloc.appendChild(el('span', 'reglage-titre', titre));
+        var r = el('div', 'reglage-choix');
+        valeurs.forEach(function (v) {
+          var b = el('button', 'pastille' + (courant() === v ? ' is-active' : ''));
+          b.innerHTML = rendu(v);
+          b.onclick = function () {
+            poser(v);
+            majApercu();
+            /* on redessine la rangée pour déplacer la coche */
+            Array.prototype.forEach.call(r.children, function (x) { x.className = 'pastille'; });
+            b.className = 'pastille is-active';
+          };
+          r.appendChild(b);
+        });
+        bloc.appendChild(r);
+        zone.appendChild(bloc);
+      }
+      function couleur(v) { return '<i style="background:' + v + '"></i>'; }
+      function mot(v) { return '<span>' + v + '</span>'; }
+
+      if (champs.indexOf('teint') >= 0) {
+        rangee('Teint', PALETTES.teint,
+          function () { return p.reglages.teint; },
+          function (v) { p.reglages.teint = v; }, couleur);
+      }
+      if (champs.indexOf('cheveux') >= 0) {
+        rangee('Cheveux', PALETTES.cheveux,
+          function () { return p.reglages.cheveux; },
+          function (v) { p.reglages.cheveux = v; }, couleur);
+      }
+      if (champs.indexOf('coiffure') >= 0) {
+        rangee('Coiffure', Art.coiffures,
+          function () { return p.reglages.coiffure; },
+          function (v) { p.reglages.coiffure = v; }, mot);
+      }
+      if (champs.indexOf('haut') >= 0) {
+        rangee('Haut', Art.hauts,
+          function () { return p.reglages.haut; },
+          function (v) { p.reglages.haut = v; }, mot);
+        rangee('Couleur du haut', PALETTES.vetement,
+          function () { return p.reglages.vetement; },
+          function (v) { p.reglages.vetement = v; }, couleur);
+      }
+      if (champs.indexOf('bas') >= 0) {
+        rangee('Bas', Art.bas,
+          function () { return p.reglages.bas; },
+          function (v) { p.reglages.bas = v; }, mot);
+        rangee('Couleur du bas', PALETTES.bas,
+          function () { return p.reglages.couleurBas; },
+          function (v) { p.reglages.couleurBas = v; }, couleur);
+      }
+      if (champs.indexOf('vetement') >= 0) {
+        rangee('Pyjama', PALETTES.vetement,
+          function () { return p.reglages.vetement; },
+          function (v) { p.reglages.vetement = v; }, couleur);
+      }
+      if (champs.indexOf('poil') >= 0) {
+        rangee('Poil', PALETTES.poil,
+          function () { return p.reglages.poil; },
+          function (v) { p.reglages.poil = v; majClair(p); }, couleur);
+        rangee('Oreilles', OREILLES_ANIMAL,
+          function () { return p.reglages.oreilles; },
+          function (v) { p.reglages.oreilles = v; }, mot);
+        rangee('Queue', QUEUES,
+          function () { return p.reglages.queue || 'dressee'; },
+          function (v) { p.reglages.queue = v; }, mot);
+      }
+      if (champs.indexOf('rond') >= 0) {
+        rangee('Couleur', PALETTES.rond,
+          function () { return p.reglages.couleur; },
+          function (v) { p.reglages.couleur = v; }, couleur);
+        rangee('Forme', FORMES_ROND,
+          function () { return p.reglages.forme; },
+          function (v) { p.reglages.forme = v; }, mot);
+        rangee('Oreilles', OREILLES_ROND,
+          function () { return p.reglages.oreilles; },
+          function (v) { p.reglages.oreilles = v; }, mot);
+        rangee('Museau', ['oui', 'non'],
+          function () { return p.reglages.museau ? 'oui' : 'non'; },
+          function (v) { p.reglages.museau = v === 'oui'; }, mot);
+      }
+      if (champs.indexOf('accessoires') >= 0) {
+        var bloc = el('div', 'reglage');
+        bloc.appendChild(el('span', 'reglage-titre', 'Accessoires'));
+        var r = el('div', 'reglage-choix');
+        ACCESSOIRES.forEach(function (a) {
+          var b = el('button', 'pastille pastille-large' +
+            (p.reglages[a.id] ? ' is-active' : ''), '<span>' + a.emoji + ' ' + a.nom + '</span>');
+          b.onclick = function () {
+            /* un accessoire porte une couleur : on lui en donne une par
+               défaut, et l'enlever c'est le remettre à rien */
+            p.reglages[a.id] = p.reglages[a.id] ? null : couleurAccessoire(a.id, p);
+            b.classList.toggle('is-active', !!p.reglages[a.id]);
+            majApercu();
+          };
+          r.appendChild(b);
+        });
+        bloc.appendChild(r);
+        zone.appendChild(bloc);
+      }
+
+      /* --- l'identité --- */
+      var idbloc = el('div', 'reglage');
+      idbloc.appendChild(el('span', 'reglage-titre', 'Son prénom'));
+      var champ = el('input', 'perso-prenom');
+      champ.type = 'text';
+      champ.value = p.prenom || '';
+      champ.maxLength = 14;
+      champ.placeholder = 'Comment s\'appelle-t-il ?';
+      champ.oninput = function () { p.prenom = champ.value; };
+      idbloc.appendChild(champ);
+      zone.appendChild(idbloc);
+
+      rangee('Qui est-ce ?', LIENS,
+        function () { return p.lien; },
+        function (v) { p.lien = v; }, mot);
+
+      /* --- l'archétype : le champ le plus important --- */
+      var abloc = el('div', 'reglage');
+      abloc.appendChild(el('span', 'reglage-titre', 'Son caractère'));
+      abloc.appendChild(el('p', 'reglage-aide',
+        'C\'est lui qui décide de ce que le personnage fait dans les histoires. ' +
+        'Le tempérament n\'a pas de genre : une mamie peut être « Grognon ».'));
+      var ar = el('div', 'reglage-choix');
+      var dit = el('p', 'archetype-dit');
+      ARCHETYPES.forEach(function (a) {
+        var b = el('button', 'pastille pastille-large' + (p.archetype === a.id ? ' is-active' : ''),
+          '<span>' + a.emoji + ' ' + a.nom + '</span>');
+        b.onclick = function () {
+          p.archetype = a.id;
+          Array.prototype.forEach.call(ar.children, function (x) { x.className = 'pastille pastille-large'; });
+          b.className = 'pastille pastille-large is-active';
+          dit.textContent = a.dit;
+        };
+        ar.appendChild(b);
+      });
+      abloc.appendChild(ar);
+      dit.textContent = (archetype(p.archetype) || ARCHETYPES[0]).dit;
+      abloc.appendChild(dit);
+      zone.appendChild(abloc);
+
+      /* --- les boutons --- */
+      var actions = el('div', 'perso-actions');
+      var ok = el('button', 'cta', '<span class="cta-img">✓</span><span class="cta-mot">Enregistrer</span>');
+      ok.onclick = function () {
+        if (!p.prenom.trim()) { champ.focus(); champ.classList.add('manque'); return; }
+        enregistrer(p);
+        if (onFini) onFini();
+        grille();
+      };
+      actions.appendChild(ok);
+      var annuler = el('button', 'chip', '↩ Annuler');
+      annuler.onclick = grille;
+      actions.appendChild(annuler);
+      if (p.id) {
+        var sup = el('button', 'chip chip-danger', '🗑 Supprimer');
+        sup.onclick = function () { confirmerSuppression(p); };
+        actions.appendChild(sup);
+      }
+      zone.appendChild(actions);
+      window.scrollTo(0, 0);
+    }
+
+    /* Supprimer un personnage n'est pas anodin : une histoire déjà lue s'en
+       souvient. Tant que le stockage des histoires n'existe pas, on se
+       contente de le dire — mais on le dit. */
+    function confirmerSuppression(p) {
+      var f = el('div', 'perso-confirme',
+        '<p>Supprimer <b>' + (p.prenom || 'ce personnage') + '</b> ?</p>' +
+        '<p class="petit">Les histoires déjà lues qui le font apparaître ne pourront plus ' +
+        'être relues à l\'identique.</p>');
+      var oui = el('button', 'chip chip-danger', 'Oui, supprimer');
+      oui.onclick = function () { supprimer(p.id); if (onFini) onFini(); grille(); };
+      var non = el('button', 'chip', 'Non, garder');
+      non.onclick = function () { f.remove(); };
+      f.appendChild(oui); f.appendChild(non);
+      zone.appendChild(f);
+      f.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+
+    grille();
+  }
+
+  function couleurAccessoire(cle, p) {
+    if (cle === 'couronne') return '#ffd93d';
+    if (cle === 'chapeau') return Art.shade(p.reglages.vetement || '#3ec9c9', 0.2);
+    if (cle === 'noeuds' || cle === 'barrette') return '#ff5c8a';
+    return true;    // les lunettes n'ont pas de couleur
+  }
+
+  function archetype(aid) {
+    for (var i = 0; i < ARCHETYPES.length; i++) if (ARCHETYPES[i].id === aid) return ARCHETYPES[i];
+    return null;
+  }
+  function silhouetteDe(sid) {
+    for (var i = 0; i < SILHOUETTES.length; i++) if (SILHOUETTES[i].id === sid) return SILHOUETTES[i];
+    return SILHOUETTES[0];
+  }
+
+  global.Perso = {
+    MAX: MAX,
+    ARCHETYPES: ARCHETYPES,
+    LIENS: LIENS,
+    SILHOUETTES: SILHOUETTES,
+    PALETTES: PALETTES,
+    tous: lire,
+    enregistrer: enregistrer,
+    supprimer: supprimer,
+    archetype: archetype,
+    pourDessin: pourDessin,
+    vignette: vignette,
+    ouvrir: ouvrir,
+    /* prévenir quand la famille change : les jeux s'en servent pour se
+       remettre à jour sans que personne ait à y penser */
+    surChangement: function (f) { ecouteurs.push(f); }
+  };
+})(window);
+
+/* ============================================================
    stories.js — les canevas d'histoires
 
    VOLONTAIREMENT VIDE. Le contenu de ce fichier repart de zéro :
@@ -3275,7 +3912,7 @@ var FIGURANTS = {
   },
   petit: {
     t: 'enfant', teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre',
-    vetement: '#e8746b', bord: '#ffd9c9'
+    vetement: '#e8746b', haut: 'teeshirt', bas: 'short', couleurBas: '#4a6ea8'
   },
   doudou: {
     t: 'rond', couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true
@@ -3479,19 +4116,19 @@ var COUVERTURE = {
      JEU 1 — RELIER : chaque héros retrouve son objet
      ============================================================ */
   /* ------------------------------------------------------------
-     LE CASTING PAR DÉFAUT
+     LE CASTING
 
-     Ces personnages ne sont là que pour que les jeux tournent avant
-     le créateur de personnages. Le jour où la famille existe, cette
-     liste est remplacée par la sienne — et rien d'autre ne bouge :
-     les jeux ne connaissent que `CASTING`, jamais un personnage précis.
+     Les jeux ne connaissent jamais un personnage précis : ils demandent
+     `casting()`, et c'est tout. Dès qu'une famille existe, c'est elle
+     qui répond ; tant qu'elle n'existe pas, ce sont ces figurants
+     d'attente. Aucun jeu n'a eu à changer pour ça.
      ------------------------------------------------------------ */
-  var CASTING = [
+  var FIGURANTS = [
     { nom: 'Léa', objet: 'le cerf-volant',
       qui: { t: 'enfant', teint: '#f2c49a', cheveux: '#4a2f22', coiffure: 'boucles', vetement: '#3ec9c9', bord: '#fff1a8' },
       qoi: { t: 'cerfvolant', ds: 1.15, dy: 70 } },
     { nom: 'Tom', objet: 'le ballon',
-      qui: { t: 'enfant', teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre', vetement: '#e8746b' },
+      qui: { t: 'enfant', teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre', vetement: '#e8746b', haut: 'teeshirt', bas: 'short', couleurBas: '#4a6ea8' },
       qoi: { t: 'ballon', ds: 1.1, dy: 122 } },
     { nom: 'Jade', objet: 'la fleur',
       qui: { t: 'enfant', teint: '#c9885c', cheveux: '#2f2118', coiffure: 'deuxtresses', vetement: '#a98cf0' },
@@ -3512,7 +4149,7 @@ var COUVERTURE = {
       qui: { t: 'bebe', teint: '#f6cba6', cheveux: '#f7dc8a', vetement: '#8ec9f0' },
       qoi: { t: 'peluche', ds: 2, dy: 150 } },
     { nom: 'Maman', objet: 'la voiture',
-      qui: { t: 'adulte', teint: '#f2c49a', cheveux: '#6b4a33', coiffure: 'queue', vetement: '#4f8a7a' },
+      qui: { t: 'adulte', teint: '#f2c49a', cheveux: '#6b4a33', coiffure: 'queue', vetement: '#4f8a7a', haut: 'pull', bas: 'pantalon', couleurBas: '#3f4a5c' },
       qoi: { t: 'voiture', ds: .68, dy: 122 } },
     { nom: 'Mamie', objet: 'le gâteau de sable',
       qui: { t: 'adulte', teint: '#f0d7bd', cheveux: '#e4e2dc', coiffure: 'carre', vetement: '#a98cf0', lunettes: true },
@@ -3535,12 +4172,43 @@ var COUVERTURE = {
     return o;
   }
 
-  var PAIRES = CASTING.map(function (c) {
-    return { nom: c.nom, objet: c.objet, a: vignettePerso(c), b: c.qoi };
-  });
+  /* De quoi donner un objet à chacun : le jeu « relier » a besoin d'une
+     paire par personnage, et une famille inventée n'apporte pas ses
+     objets avec elle. */
+  var OBJETS = [
+    { nom: 'le cerf-volant', qoi: { t: 'cerfvolant', ds: 1.15, dy: 70 } },
+    { nom: 'le ballon', qoi: { t: 'ballon', ds: 1.1, dy: 122 } },
+    { nom: 'la fleur', qoi: { t: 'fleur', ds: 2.2, dy: 120 } },
+    { nom: 'le cube', qoi: { t: 'cube', ds: 1.5, dy: 136 } },
+    { nom: 'le caillou', qoi: { t: 'caillou', ds: 1.5, dy: 130 } },
+    { nom: 'la boule de neige', qoi: { t: 'bouleneige', ds: 1, dy: 100, r: 52 } },
+    { nom: 'la mangue', qoi: { t: 'mangue', ds: 1.6, dy: 128 } },
+    { nom: 'la peluche', qoi: { t: 'peluche', ds: 2, dy: 150 } },
+    { nom: 'la voiture', qoi: { t: 'voiture', ds: .68, dy: 122 } },
+    { nom: 'le château de sable', qoi: { t: 'chateausable', ds: .8, dy: 150 } },
+    { nom: 'le coquillage', qoi: { t: 'coquillage', ds: 2, dy: 130 } },
+    { nom: 'le papillon', qoi: { t: 'papillon', ds: 2.4, dy: 110 } }
+  ];
+
+  /* La famille d'abord, les figurants ensuite. C'est le seul endroit de
+     `games.js` qui sait que `Perso` existe. */
+  function casting() {
+    var famille = (global.Perso && Perso.tous()) || [];
+    if (!famille.length) return FIGURANTS;
+    return famille.map(function (p, i) {
+      var o = OBJETS[i % OBJETS.length];
+      return { nom: p.prenom, objet: o.nom, qui: Perso.pourDessin(p), qoi: o.qoi };
+    });
+  }
+
+  function paires() {
+    return casting().map(function (c) {
+      return { nom: c.nom, objet: c.objet, a: vignettePerso(c), b: c.qoi };
+    });
+  }
 
   function jeuRelier(zone, n, api) {
-    var lot = piocher(PAIRES, 3);
+    var lot = piocher(paires(), 3);
     api.consigne('Touche un personnage, puis son objet.');
 
     var plateau = el('div', 'relier');
@@ -3628,7 +4296,7 @@ var COUVERTURE = {
     api.consigne('Combien y a-t-il de ' + o.pluriel + ' ?');
 
     /* quelqu'un montre du doigt, les objets s'étalent bien à plat pour être comptés */
-    var meneur = CASTING[0].qui, items = [{ x: 90, y: 522, s: .9, pose: 'montre' }], k;
+    var meneur = casting()[0].qui, items = [{ x: 90, y: 522, s: .9, pose: 'montre' }], k;
     for (k in meneur) if (meneur.hasOwnProperty(k)) items[0][k] = meneur[k];
 
     var gauche = 250, largeur = 480;
@@ -3707,8 +4375,20 @@ var COUVERTURE = {
   /* Les prénoms à tracer. Ceux-ci sont des prénoms d'attente : le jour où la
      famille est créée, c'est elle qui remplit cette liste — un enfant apprend
      d'abord à écrire SON prénom, pas un prénom d'exemple. */
-  var PRENOMS = ['MAMAN', 'PAPA', 'LÉA', 'TOM', 'JADE', 'HUGO', 'ZOÉ', 'NOÉ',
+  var PRENOMS_ATTENTE = ['MAMAN', 'PAPA', 'LÉA', 'TOM', 'JADE', 'HUGO', 'ZOÉ', 'NOÉ',
     'ALICE', 'GASPARD', 'MAMIE', 'PAPI'];
+
+  /* Un enfant apprend d'abord à écrire SON prénom, pas un prénom d'exemple :
+     dès que la famille existe, ce sont ses prénoms qu'on trace. On ne garde
+     que ceux dont toutes les lettres sont traçables. */
+  function prenoms() {
+    var famille = (global.Perso && Perso.tous()) || [];
+    var liste = famille.map(function (p) { return (p.prenom || '').toUpperCase(); })
+      .filter(function (n) {
+        return n.length > 1 && n.split('').every(function (c) { return LETTRES[c]; });
+      });
+    return liste.length ? liste : PRENOMS_ATTENTE;
+  }
 
   var NS = 'http://www.w3.org/2000/svg';
   var lotPrenoms = null;
@@ -3726,12 +4406,13 @@ var COUVERTURE = {
     h.onclick = function () { pret(null); };
     zone.appendChild(h);
   }
-  function choixPrenom(zone, pret) { grilleChoix(zone, PRENOMS, pret, '🎲 Cinq au hasard'); }
+  function choixPrenom(zone, pret) { grilleChoix(zone, prenoms(), pret, '🎲 Cinq au hasard'); }
 
   function jeuEcrire(zone, n, api, choisi) {
     if (choisi) return ecrireMot(zone, choisi, api);
     if (n === 0 || !lotPrenoms) {
-      lotPrenoms = piocher(PRENOMS, PRENOMS.length);
+      var P = prenoms();
+      lotPrenoms = piocher(P, P.length);
     }
     return ecrireMot(zone, lotPrenoms[n % lotPrenoms.length], api);
   }
@@ -3942,47 +4623,51 @@ var COUVERTURE = {
      aucune, on se rabat sur ces trois scènes de démonstration — le jeu
      doit tourner le premier jour, avant la première histoire.
      ------------------------------------------------------------ */
-  var SCENES_DEMO = [
-    {
-      decor: 'plage', heure: 'jour',
-      fond: [{ t: 'palmier', x: 110, y: 400, s: 1.1 }, { t: 'parasol', x: 690, y: 420, s: .8, color: '#ff5c8a' }],
-      items: [
-        merge(CASTING[0].qui, { x: 250, y: 520, s: .95, pose: 'salue' }),
-        merge(CASTING[4].qui, { x: 470, y: 524, s: .85, pose: 'assis' }),
-        merge(CASTING[3].qui, { x: 640, y: 522, s: .8, pose: 'brasenlair' })
-      ],
-      avant: [
-        { t: 'coquillage', x: 120, y: 542, s: 1.6 }, { t: 'etoilemer', x: 340, y: 552, s: 1.4 },
-        { t: 'seau', x: 560, y: 546, s: .9, color: '#3ec9c9' }, { t: 'crabe', x: 740, y: 540, s: 1.2 }
-      ]
-    },
-    {
-      decor: 'jardin', heure: 'jour',
-      fond: [{ t: 'arbre', x: 120, y: 400, s: 1.15 }, { t: 'buisson', x: 700, y: 420, s: 1.1 }],
-      items: [
-        merge(CASTING[1].qui, { x: 240, y: 522, s: .95, pose: 'court' }),
-        merge(CASTING[2].qui, { x: 450, y: 520, s: .95, pose: 'montre' }),
-        merge(CASTING[6].qui, { x: 640, y: 526, s: .8, pose: 'saute' })
-      ],
-      avant: [
-        { t: 'fleur', x: 90, y: 548, s: 1.7 }, { t: 'fleur', x: 330, y: 552, s: 1.5, color: '#fff1a8' },
-        { t: 'ballon', x: 560, y: 544, s: 1.1 }, { t: 'papillon', x: 700, y: 300, s: 1.5 }
-      ]
-    },
-    {
-      decor: 'chambre', heure: 'nuit',
-      fond: [{ t: 'etagere', x: 180, y: 400, s: .9 }],
-      items: [
-        merge(CASTING[8].qui, { x: 260, y: 528, s: 1, pose: 'tient' }),
-        merge(CASTING[7].qui, { x: 450, y: 530, s: .9, pose: 'assis' }),
-        merge(CASTING[3].qui, { x: 620, y: 528, s: .8, pose: 'debout' })
-      ],
-      avant: [
-        { t: 'cube', x: 120, y: 548, s: 1.3 }, { t: 'tourcubes', x: 340, y: 550, s: .9, n: 3 },
-        { t: 'peluche', x: 700, y: 544, s: 1.6 }
-      ]
+  /* Une équipe de personnages DISTINCTS, quelle que soit la taille de la
+     famille. Prendre `C[i % n]` paraît suffisant, mais avec quatre
+     personnages et les indices 0, 4, 3 on retrouve deux fois le même sur la
+     planche — et une planche où l'enfant se voit en double, ça se remarque
+     tout de suite. Si la famille est trop petite, la scène est plus petite. */
+  function equipe(C, depart, poses) {
+    var n = C.length, combien = Math.min(poses.length, n), out = [], i;
+    for (i = 0; i < combien; i++) {
+      out.push(merge(C[(depart + i) % n].qui, { pose: poses[i] }));
     }
-  ];
+    return out;
+  }
+
+  /* Ces trois scènes ne portent AUCUNE coordonnée : elles donnent un
+     casting et un décor, et la mise en scène place. C'est ce qui leur
+     permet de marcher avec la famille de n'importe qui — trois enfants de
+     même taille comme un bébé, une mamie et un doudou. */
+  function scenesDemo() {
+    var C = casting();
+    return [
+      Scene.composer({
+        decor: 'plage',
+        casting: equipe(C, 0, ['salue', 'assis', 'brasenlair']),
+        fond: [{ t: 'palmier', x: 110, y: 400, s: 1.1 },
+          { t: 'parasol', x: 690, y: 420, s: .8, color: '#ff5c8a' }],
+        avant: [{ t: 'coquillage', x: 120, y: 542, s: 1.6 }, { t: 'etoilemer', x: 340, y: 552, s: 1.4 },
+          { t: 'seau', x: 560, y: 546, s: .9, color: '#3ec9c9' }, { t: 'crabe', x: 740, y: 540, s: 1.2 }]
+      }),
+      Scene.composer({
+        decor: 'jardin',
+        casting: equipe(C, 1, ['court', 'montre', 'saute']),
+        fond: [{ t: 'arbre', x: 120, y: 400, s: 1.15 }, { t: 'buisson', x: 700, y: 420, s: 1.1 }],
+        avant: [{ t: 'fleur', x: 90, y: 548, s: 1.7 }, { t: 'fleur', x: 330, y: 552, s: 1.5, color: '#fff1a8' },
+          { t: 'ballon', x: 560, y: 544, s: 1.1 }, { t: 'papillon', x: 700, y: 300, s: 1.5 }]
+      }),
+      Scene.composer({
+        decor: 'chambre', heure: 'nuit',
+        casting: equipe(C, 2, ['tient', 'assis', 'debout']),
+        fond: [{ t: 'etagere', x: 180, y: 400, s: .9 }],
+        avant: [{ t: 'cube', x: 120, y: 548, s: 1.3 }, { t: 'tourcubes', x: 340, y: 550, s: .9, n: 3 },
+          { t: 'peluche', x: 700, y: 544, s: 1.6 }]
+      })
+    ];
+  }
+
   /* deux rangs : au premier plan, et un peu en retrait dans le décor */
   var PLACES = [[70, 550], [190, 548], [320, 552], [470, 550], [610, 548], [730, 546],
     [110, 468], [250, 464], [400, 460], [550, 464], [690, 466]];
@@ -4016,7 +4701,7 @@ var COUVERTURE = {
       });
     });
     if (!out.length) {
-      out = SCENES_DEMO.map(function (sc, i) { return { scene: sc, graine: i }; });
+      out = scenesDemo().map(function (sc, i) { return { scene: sc, graine: i }; });
     }
     return out;
   }
@@ -4230,19 +4915,19 @@ var COUVERTURE = {
     {
       id: 'relier', nom: 'Relie les amis', emoji: '🔗',
       sous: 'Chaque héros retrouve son objet',
-      vignette: vignettePerso(CASTING[0]),
+      vignette: vignettePerso(FIGURANTS[0]),
       def: { manches: 4, manche: jeuRelier, felicitation: 'Tu as relié tous les amis !' }
     },
     {
       id: 'compter', nom: 'Compte jusqu\'à six', emoji: '🔢',
       sous: 'Combien y en a-t-il ?',
-      vignette: vignettePerso(CASTING[2]),
+      vignette: vignettePerso(FIGURANTS[2]),
       def: { manches: 5, manche: jeuCompter, felicitation: 'Tu sais compter jusqu\'à 6 !' }
     },
     {
       id: 'ecrire', nom: 'Écris les prénoms', emoji: '✏️',
       sous: 'Ceux de la maison, lettre après lettre',
-      vignette: vignettePerso(CASTING[8]),
+      vignette: vignettePerso(FIGURANTS[8]),
       def: {
         manches: function (v) { return v ? 1 : 5; },
         manche: jeuEcrire,
@@ -4255,7 +4940,7 @@ var COUVERTURE = {
     {
       id: 'differences', nom: 'Les 6 différences', emoji: '🔍',
       sous: 'Deux cases presque pareilles',
-      vignette: vignettePerso(CASTING[4], .6),
+      vignette: vignettePerso(FIGURANTS[4], .6),
       def: {
         manches: 6, manche: jeuDifferences, plein: true,
         felicitation: 'Tu as l\'œil ! Six fois six différences.'
@@ -4264,7 +4949,7 @@ var COUVERTURE = {
     {
       id: 'alphabet', nom: 'L\'alphabet', emoji: '🔤',
       sous: 'Reconnaître puis tracer chaque lettre',
-      vignette: vignettePerso(CASTING[1]),
+      vignette: vignettePerso(FIGURANTS[1]),
       def: {
         manches: function (v) { return v ? 2 : 6; },
         manche: jeuAlphabet,
@@ -4276,8 +4961,22 @@ var COUVERTURE = {
     }
   ];
 
+  /* Les vignettes du catalogue sont dessinées une fois au chargement, avec
+     les figurants. Quand la famille change, il faut les redessiner — sinon
+     l'enfant voit des inconnus sur les cartes de jeu. */
+  function rafraichir() {
+    var C = casting(), i;
+    /* un personnage différent par carte : cinq fois le même héros sur la
+       page des jeux, ça donne l'impression qu'il n'y a qu'un personnage */
+    for (i = 0; i < JEUX.length; i++) {
+      JEUX[i].vignette = vignettePerso(C[i % C.length],
+        JEUX[i].id === 'differences' ? .6 : undefined);
+    }
+  }
+
   global.Jeux = {
     liste: JEUX,
+    rafraichir: rafraichir,
     trouver: function (id) {
       for (var i = 0; i < JEUX.length; i++) if (JEUX[i].id === id) return JEUX[i];
       return null;
@@ -4559,6 +5258,7 @@ var COUVERTURE = {
     coverNav: $('#coverNav'), coverSticker: $('#coverSticker'),
     topbar: document.querySelector('.topbar'),
     coverRandom: $('#btnCoverRandom'),
+    famille: $('#viewFamille'), familleStage: $('#familleStage'),
     games: $('#viewGames'), gamesGrid: $('#gamesGrid'), gameStage: $('#gameStage'),
     gamesSub: $('#gamesSub'), jeuxNav: $('#jeuxNav'),
     grid: $('#uniGrid'), random: $('#btnRandom'),
@@ -4644,7 +5344,7 @@ var COUVERTURE = {
       var nav = b[i].getAttribute('data-nav');
       b[i].className = nav === actif ? 'is-active' : '';
       b[i].onclick = (function (n) {
-        return function () { location.hash = n === 'jeux' ? '#/jeux' : '#/histoires'; };
+        return function () { location.hash = '#/' + (n === 'histoires' ? 'histoires' : n); };
       })(nav);
     }
   }
@@ -4755,7 +5455,10 @@ var COUVERTURE = {
     });
   }
 
+  /* les jeux prennent leurs héros dans la famille : si elle a changé, les
+     vignettes du catalogue doivent changer avec elle */
   function renderGames() {
+    if (Jeux.rafraichir) Jeux.rafraichir();
     els.gamesGrid.innerHTML = '';
     els.gamesGrid.hidden = false;
     els.gameStage.hidden = true;
@@ -5072,7 +5775,7 @@ var COUVERTURE = {
       closeReader();
       setTheme(null);
       els.cover.hidden = false; els.home.hidden = true; els.uni.hidden = true;
-      els.games.hidden = true; Jeux.taire();
+      els.games.hidden = true; els.famille.hidden = true; Jeux.taire();
       els.topbar.hidden = true; els.tabs.hidden = true; els.mainnav.hidden = true;
       renderCover();
       window.scrollTo(0, 0);
@@ -5081,6 +5784,20 @@ var COUVERTURE = {
 
     els.cover.hidden = true;
     els.topbar.hidden = false; els.mainnav.hidden = false;
+
+    if (parts[0] === 'famille') {                // le créateur de personnages
+      closeReader();
+      Jeux.taire();
+      renderNav('famille');
+      setTheme(null);
+      els.tabs.hidden = true;
+      els.home.hidden = true; els.uni.hidden = true; els.games.hidden = true;
+      els.famille.hidden = false;
+      Perso.ouvrir(els.familleStage);
+      window.scrollTo(0, 0);
+      return;
+    }
+    els.famille.hidden = true;
 
     if (parts[0] === 'jeux') {                   // les jeux
       closeReader();
@@ -5169,6 +5886,14 @@ var COUVERTURE = {
     clearTimeout(minuteurUne);
     minuteurUne = setTimeout(dessinerUne, 150);
   });
+
+  /* Pas d'histoire, pas de dé. Le réglage se faisait dans la une, donc le
+     bouton restait visible partout ailleurs. */
+  (function () {
+    var total = 0;
+    UNIVERSES.forEach(function (u) { total += u.stories.length; });
+    els.random.hidden = !total;
+  })();
 
   window.addEventListener('hashchange', route);
   majSoir();

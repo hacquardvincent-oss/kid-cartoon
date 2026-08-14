@@ -224,6 +224,15 @@ meilleurs résultats qu'un espace ouvert, et reste maîtrisable côté écriture
   doudou, imaginaire).
 * **Un archétype**, et c'est le champ le plus important.
 
+### Les six archétypes retenus
+
+`Grognon`, `Timide`, `Rapide`, `Curieuse`, `Farceur`, `Range-tout`. Trois
+moteurs (ça déclenche) et trois freins (ça soigne) : de quoi armer une
+histoire des deux côtés. **L'article est genré mais le tempérament ne l'est
+pas** — on donne « Range-tout » à un papa et « Grognon » à une mamie, et
+c'est précisément ce qui permet d'écrire des phrases précises tout en les
+appliquant à n'importe quelle famille.
+
 ### Les archétypes commandent tout
 
 Les histoires ne sont pas écrites pour des rôles vides (« LE HÉROS ») — ça
@@ -302,8 +311,9 @@ Les jeux qui se transposent presque sans travail :
    licence, jeux, PWA, outils de contrôle.~~ **Fait.**
 2. ~~**Le placement automatique des personnages** — tout le reste en dépend.~~
    **Fait** (`assets/js/scene.js`).
-3. Le créateur de personnages, version minimale : trois silhouettes, les
-   couleurs, six archétypes.
+3. ~~Le créateur de personnages, version minimale : trois silhouettes, les
+   couleurs, six archétypes.~~ **Fait** (`assets/js/perso.js`) — cinq
+   silhouettes plutôt que trois, puisqu'elles étaient toutes prêtes.
 4. **Le gros du travail** : écrire une vingtaine de canevas d'histoires en
    casting par archétype, et vérifier qu'ils tiennent une fois personnalisés.
 5. Élargir : silhouettes, garde-robe, décors, archétypes, histoires.
@@ -335,15 +345,21 @@ suivant.
 
 ## Ce qui manque encore, et qu'on sait déjà
 
+* **Les accessoires `cape` et `masque` n'existent pas encore** dans le
+  moteur — le créateur ne propose donc que lunettes, couronne, chapeau,
+  nœuds et barrette.
 * **Un personnage supprimé casse les histoires déjà lues.** On a choisi de ne
   PAS recopier le casting dans l'histoire. Il faut donc décider ce qui se
   passe quand l'enfant supprime le doudou dont une histoire d'hier se
   souvient : une silhouette de repli ? l'histoire qui disparaît des « déjà
   lues » ? un avertissement au parent au moment de la suppression ? À trancher
   avant d'écrire le stockage des personnages.
-* **Les jeux tiennent un casting d'attente** (`CASTING` dans `games.js`) et
-  une liste de prénoms d'attente. Le jour où la famille existe, ce sont ces
-  deux listes qu'on remplace — et rien d'autre.
+* ~~**Les jeux tiennent un casting d'attente.**~~ **Fait** : les jeux
+  demandent `casting()` et `prenoms()`, qui répondent la famille dès
+  qu'elle existe, et les figurants sinon. Aucun jeu n'a eu à changer.
+  Les scènes du jeu des différences ne portent plus aucune coordonnée :
+  elles passent par `Scene.composer`, donc elles marchent avec la famille
+  de n'importe qui.
 
 ---
 

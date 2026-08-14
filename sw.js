@@ -9,7 +9,7 @@
    Pour publier une mise à jour : changer VERSION. L'ancien cache est
    effacé, le nouveau se remplit, et la page se recharge d'elle-même.
    ============================================================ */
-var VERSION = 'kid-cartoon-2026-08-14b';
+var VERSION = 'kid-cartoon-2026-08-14c';
 
 var FICHIERS = [
   './',
@@ -18,6 +18,7 @@ var FICHIERS = [
   './assets/css/style.css',
   './assets/js/art.js',
   './assets/js/scene.js',
+  './assets/js/perso.js',
   './assets/js/stories.js',
   './assets/js/games.js',
   './assets/js/app.js',

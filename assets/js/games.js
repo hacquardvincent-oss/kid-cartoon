@@ -138,14 +138,14 @@
      JEU 1 — RELIER : chaque héros retrouve son objet
      ============================================================ */
   /* ------------------------------------------------------------
-     LE CASTING PAR DÉFAUT
+     LE CASTING
 
-     Ces personnages ne sont là que pour que les jeux tournent avant
-     le créateur de personnages. Le jour où la famille existe, cette
-     liste est remplacée par la sienne — et rien d'autre ne bouge :
-     les jeux ne connaissent que `CASTING`, jamais un personnage précis.
+     Les jeux ne connaissent jamais un personnage précis : ils demandent
+     `casting()`, et c'est tout. Dès qu'une famille existe, c'est elle
+     qui répond ; tant qu'elle n'existe pas, ce sont ces figurants
+     d'attente. Aucun jeu n'a eu à changer pour ça.
      ------------------------------------------------------------ */
-  var CASTING = [
+  var FIGURANTS = [
     { nom: 'Léa', objet: 'le cerf-volant',
       qui: { t: 'enfant', teint: '#f2c49a', cheveux: '#4a2f22', coiffure: 'boucles', vetement: '#3ec9c9', bord: '#fff1a8' },
       qoi: { t: 'cerfvolant', ds: 1.15, dy: 70 } },
@@ -194,12 +194,43 @@
     return o;
   }
 
-  var PAIRES = CASTING.map(function (c) {
-    return { nom: c.nom, objet: c.objet, a: vignettePerso(c), b: c.qoi };
-  });
+  /* De quoi donner un objet à chacun : le jeu « relier » a besoin d'une
+     paire par personnage, et une famille inventée n'apporte pas ses
+     objets avec elle. */
+  var OBJETS = [
+    { nom: 'le cerf-volant', qoi: { t: 'cerfvolant', ds: 1.15, dy: 70 } },
+    { nom: 'le ballon', qoi: { t: 'ballon', ds: 1.1, dy: 122 } },
+    { nom: 'la fleur', qoi: { t: 'fleur', ds: 2.2, dy: 120 } },
+    { nom: 'le cube', qoi: { t: 'cube', ds: 1.5, dy: 136 } },
+    { nom: 'le caillou', qoi: { t: 'caillou', ds: 1.5, dy: 130 } },
+    { nom: 'la boule de neige', qoi: { t: 'bouleneige', ds: 1, dy: 100, r: 52 } },
+    { nom: 'la mangue', qoi: { t: 'mangue', ds: 1.6, dy: 128 } },
+    { nom: 'la peluche', qoi: { t: 'peluche', ds: 2, dy: 150 } },
+    { nom: 'la voiture', qoi: { t: 'voiture', ds: .68, dy: 122 } },
+    { nom: 'le château de sable', qoi: { t: 'chateausable', ds: .8, dy: 150 } },
+    { nom: 'le coquillage', qoi: { t: 'coquillage', ds: 2, dy: 130 } },
+    { nom: 'le papillon', qoi: { t: 'papillon', ds: 2.4, dy: 110 } }
+  ];
+
+  /* La famille d'abord, les figurants ensuite. C'est le seul endroit de
+     `games.js` qui sait que `Perso` existe. */
+  function casting() {
+    var famille = (global.Perso && Perso.tous()) || [];
+    if (!famille.length) return FIGURANTS;
+    return famille.map(function (p, i) {
+      var o = OBJETS[i % OBJETS.length];
+      return { nom: p.prenom, objet: o.nom, qui: Perso.pourDessin(p), qoi: o.qoi };
+    });
+  }
+
+  function paires() {
+    return casting().map(function (c) {
+      return { nom: c.nom, objet: c.objet, a: vignettePerso(c), b: c.qoi };
+    });
+  }
 
   function jeuRelier(zone, n, api) {
-    var lot = piocher(PAIRES, 3);
+    var lot = piocher(paires(), 3);
     api.consigne('Touche un personnage, puis son objet.');
 
     var plateau = el('div', 'relier');
@@ -287,7 +318,7 @@
     api.consigne('Combien y a-t-il de ' + o.pluriel + ' ?');
 
     /* quelqu'un montre du doigt, les objets s'étalent bien à plat pour être comptés */
-    var meneur = CASTING[0].qui, items = [{ x: 90, y: 522, s: .9, pose: 'montre' }], k;
+    var meneur = casting()[0].qui, items = [{ x: 90, y: 522, s: .9, pose: 'montre' }], k;
     for (k in meneur) if (meneur.hasOwnProperty(k)) items[0][k] = meneur[k];
 
     var gauche = 250, largeur = 480;
@@ -366,8 +397,20 @@
   /* Les prénoms à tracer. Ceux-ci sont des prénoms d'attente : le jour où la
      famille est créée, c'est elle qui remplit cette liste — un enfant apprend
      d'abord à écrire SON prénom, pas un prénom d'exemple. */
-  var PRENOMS = ['MAMAN', 'PAPA', 'LÉA', 'TOM', 'JADE', 'HUGO', 'ZOÉ', 'NOÉ',
+  var PRENOMS_ATTENTE = ['MAMAN', 'PAPA', 'LÉA', 'TOM', 'JADE', 'HUGO', 'ZOÉ', 'NOÉ',
     'ALICE', 'GASPARD', 'MAMIE', 'PAPI'];
+
+  /* Un enfant apprend d'abord à écrire SON prénom, pas un prénom d'exemple :
+     dès que la famille existe, ce sont ses prénoms qu'on trace. On ne garde
+     que ceux dont toutes les lettres sont traçables. */
+  function prenoms() {
+    var famille = (global.Perso && Perso.tous()) || [];
+    var liste = famille.map(function (p) { return (p.prenom || '').toUpperCase(); })
+      .filter(function (n) {
+        return n.length > 1 && n.split('').every(function (c) { return LETTRES[c]; });
+      });
+    return liste.length ? liste : PRENOMS_ATTENTE;
+  }
 
   var NS = 'http://www.w3.org/2000/svg';
   var lotPrenoms = null;
@@ -385,12 +428,13 @@
     h.onclick = function () { pret(null); };
     zone.appendChild(h);
   }
-  function choixPrenom(zone, pret) { grilleChoix(zone, PRENOMS, pret, '🎲 Cinq au hasard'); }
+  function choixPrenom(zone, pret) { grilleChoix(zone, prenoms(), pret, '🎲 Cinq au hasard'); }
 
   function jeuEcrire(zone, n, api, choisi) {
     if (choisi) return ecrireMot(zone, choisi, api);
     if (n === 0 || !lotPrenoms) {
-      lotPrenoms = piocher(PRENOMS, PRENOMS.length);
+      var P = prenoms();
+      lotPrenoms = piocher(P, P.length);
     }
     return ecrireMot(zone, lotPrenoms[n % lotPrenoms.length], api);
   }
@@ -601,47 +645,51 @@
      aucune, on se rabat sur ces trois scènes de démonstration — le jeu
      doit tourner le premier jour, avant la première histoire.
      ------------------------------------------------------------ */
-  var SCENES_DEMO = [
-    {
-      decor: 'plage', heure: 'jour',
-      fond: [{ t: 'palmier', x: 110, y: 400, s: 1.1 }, { t: 'parasol', x: 690, y: 420, s: .8, color: '#ff5c8a' }],
-      items: [
-        merge(CASTING[0].qui, { x: 250, y: 520, s: .95, pose: 'salue' }),
-        merge(CASTING[4].qui, { x: 470, y: 524, s: .85, pose: 'assis' }),
-        merge(CASTING[3].qui, { x: 640, y: 522, s: .8, pose: 'brasenlair' })
-      ],
-      avant: [
-        { t: 'coquillage', x: 120, y: 542, s: 1.6 }, { t: 'etoilemer', x: 340, y: 552, s: 1.4 },
-        { t: 'seau', x: 560, y: 546, s: .9, color: '#3ec9c9' }, { t: 'crabe', x: 740, y: 540, s: 1.2 }
-      ]
-    },
-    {
-      decor: 'jardin', heure: 'jour',
-      fond: [{ t: 'arbre', x: 120, y: 400, s: 1.15 }, { t: 'buisson', x: 700, y: 420, s: 1.1 }],
-      items: [
-        merge(CASTING[1].qui, { x: 240, y: 522, s: .95, pose: 'court' }),
-        merge(CASTING[2].qui, { x: 450, y: 520, s: .95, pose: 'montre' }),
-        merge(CASTING[6].qui, { x: 640, y: 526, s: .8, pose: 'saute' })
-      ],
-      avant: [
-        { t: 'fleur', x: 90, y: 548, s: 1.7 }, { t: 'fleur', x: 330, y: 552, s: 1.5, color: '#fff1a8' },
-        { t: 'ballon', x: 560, y: 544, s: 1.1 }, { t: 'papillon', x: 700, y: 300, s: 1.5 }
-      ]
-    },
-    {
-      decor: 'chambre', heure: 'nuit',
-      fond: [{ t: 'etagere', x: 180, y: 400, s: .9 }],
-      items: [
-        merge(CASTING[8].qui, { x: 260, y: 528, s: 1, pose: 'tient' }),
-        merge(CASTING[7].qui, { x: 450, y: 530, s: .9, pose: 'assis' }),
-        merge(CASTING[3].qui, { x: 620, y: 528, s: .8, pose: 'debout' })
-      ],
-      avant: [
-        { t: 'cube', x: 120, y: 548, s: 1.3 }, { t: 'tourcubes', x: 340, y: 550, s: .9, n: 3 },
-        { t: 'peluche', x: 700, y: 544, s: 1.6 }
-      ]
+  /* Une équipe de personnages DISTINCTS, quelle que soit la taille de la
+     famille. Prendre `C[i % n]` paraît suffisant, mais avec quatre
+     personnages et les indices 0, 4, 3 on retrouve deux fois le même sur la
+     planche — et une planche où l'enfant se voit en double, ça se remarque
+     tout de suite. Si la famille est trop petite, la scène est plus petite. */
+  function equipe(C, depart, poses) {
+    var n = C.length, combien = Math.min(poses.length, n), out = [], i;
+    for (i = 0; i < combien; i++) {
+      out.push(merge(C[(depart + i) % n].qui, { pose: poses[i] }));
     }
-  ];
+    return out;
+  }
+
+  /* Ces trois scènes ne portent AUCUNE coordonnée : elles donnent un
+     casting et un décor, et la mise en scène place. C'est ce qui leur
+     permet de marcher avec la famille de n'importe qui — trois enfants de
+     même taille comme un bébé, une mamie et un doudou. */
+  function scenesDemo() {
+    var C = casting();
+    return [
+      Scene.composer({
+        decor: 'plage',
+        casting: equipe(C, 0, ['salue', 'assis', 'brasenlair']),
+        fond: [{ t: 'palmier', x: 110, y: 400, s: 1.1 },
+          { t: 'parasol', x: 690, y: 420, s: .8, color: '#ff5c8a' }],
+        avant: [{ t: 'coquillage', x: 120, y: 542, s: 1.6 }, { t: 'etoilemer', x: 340, y: 552, s: 1.4 },
+          { t: 'seau', x: 560, y: 546, s: .9, color: '#3ec9c9' }, { t: 'crabe', x: 740, y: 540, s: 1.2 }]
+      }),
+      Scene.composer({
+        decor: 'jardin',
+        casting: equipe(C, 1, ['court', 'montre', 'saute']),
+        fond: [{ t: 'arbre', x: 120, y: 400, s: 1.15 }, { t: 'buisson', x: 700, y: 420, s: 1.1 }],
+        avant: [{ t: 'fleur', x: 90, y: 548, s: 1.7 }, { t: 'fleur', x: 330, y: 552, s: 1.5, color: '#fff1a8' },
+          { t: 'ballon', x: 560, y: 544, s: 1.1 }, { t: 'papillon', x: 700, y: 300, s: 1.5 }]
+      }),
+      Scene.composer({
+        decor: 'chambre', heure: 'nuit',
+        casting: equipe(C, 2, ['tient', 'assis', 'debout']),
+        fond: [{ t: 'etagere', x: 180, y: 400, s: .9 }],
+        avant: [{ t: 'cube', x: 120, y: 548, s: 1.3 }, { t: 'tourcubes', x: 340, y: 550, s: .9, n: 3 },
+          { t: 'peluche', x: 700, y: 544, s: 1.6 }]
+      })
+    ];
+  }
+
   /* deux rangs : au premier plan, et un peu en retrait dans le décor */
   var PLACES = [[70, 550], [190, 548], [320, 552], [470, 550], [610, 548], [730, 546],
     [110, 468], [250, 464], [400, 460], [550, 464], [690, 466]];
@@ -675,7 +723,7 @@
       });
     });
     if (!out.length) {
-      out = SCENES_DEMO.map(function (sc, i) { return { scene: sc, graine: i }; });
+      out = scenesDemo().map(function (sc, i) { return { scene: sc, graine: i }; });
     }
     return out;
   }
@@ -889,19 +937,19 @@
     {
       id: 'relier', nom: 'Relie les amis', emoji: '🔗',
       sous: 'Chaque héros retrouve son objet',
-      vignette: vignettePerso(CASTING[0]),
+      vignette: vignettePerso(FIGURANTS[0]),
       def: { manches: 4, manche: jeuRelier, felicitation: 'Tu as relié tous les amis !' }
     },
     {
       id: 'compter', nom: 'Compte jusqu\'à six', emoji: '🔢',
       sous: 'Combien y en a-t-il ?',
-      vignette: vignettePerso(CASTING[2]),
+      vignette: vignettePerso(FIGURANTS[2]),
       def: { manches: 5, manche: jeuCompter, felicitation: 'Tu sais compter jusqu\'à 6 !' }
     },
     {
       id: 'ecrire', nom: 'Écris les prénoms', emoji: '✏️',
       sous: 'Ceux de la maison, lettre après lettre',
-      vignette: vignettePerso(CASTING[8]),
+      vignette: vignettePerso(FIGURANTS[8]),
       def: {
         manches: function (v) { return v ? 1 : 5; },
         manche: jeuEcrire,
@@ -914,7 +962,7 @@
     {
       id: 'differences', nom: 'Les 6 différences', emoji: '🔍',
       sous: 'Deux cases presque pareilles',
-      vignette: vignettePerso(CASTING[4], .6),
+      vignette: vignettePerso(FIGURANTS[4], .6),
       def: {
         manches: 6, manche: jeuDifferences, plein: true,
         felicitation: 'Tu as l\'œil ! Six fois six différences.'
@@ -923,7 +971,7 @@
     {
       id: 'alphabet', nom: 'L\'alphabet', emoji: '🔤',
       sous: 'Reconnaître puis tracer chaque lettre',
-      vignette: vignettePerso(CASTING[1]),
+      vignette: vignettePerso(FIGURANTS[1]),
       def: {
         manches: function (v) { return v ? 2 : 6; },
         manche: jeuAlphabet,
@@ -935,8 +983,22 @@
     }
   ];
 
+  /* Les vignettes du catalogue sont dessinées une fois au chargement, avec
+     les figurants. Quand la famille change, il faut les redessiner — sinon
+     l'enfant voit des inconnus sur les cartes de jeu. */
+  function rafraichir() {
+    var C = casting(), i;
+    /* un personnage différent par carte : cinq fois le même héros sur la
+       page des jeux, ça donne l'impression qu'il n'y a qu'un personnage */
+    for (i = 0; i < JEUX.length; i++) {
+      JEUX[i].vignette = vignettePerso(C[i % C.length],
+        JEUX[i].id === 'differences' ? .6 : undefined);
+    }
+  }
+
   global.Jeux = {
     liste: JEUX,
+    rafraichir: rafraichir,
     trouver: function (id) {
       for (var i = 0; i < JEUX.length; i++) if (JEUX[i].id === id) return JEUX[i];
       return null;

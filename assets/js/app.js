@@ -269,6 +269,7 @@
     coverNav: $('#coverNav'), coverSticker: $('#coverSticker'),
     topbar: document.querySelector('.topbar'),
     coverRandom: $('#btnCoverRandom'),
+    famille: $('#viewFamille'), familleStage: $('#familleStage'),
     games: $('#viewGames'), gamesGrid: $('#gamesGrid'), gameStage: $('#gameStage'),
     gamesSub: $('#gamesSub'), jeuxNav: $('#jeuxNav'),
     grid: $('#uniGrid'), random: $('#btnRandom'),
@@ -354,7 +355,7 @@
       var nav = b[i].getAttribute('data-nav');
       b[i].className = nav === actif ? 'is-active' : '';
       b[i].onclick = (function (n) {
-        return function () { location.hash = n === 'jeux' ? '#/jeux' : '#/histoires'; };
+        return function () { location.hash = '#/' + (n === 'histoires' ? 'histoires' : n); };
       })(nav);
     }
   }
@@ -465,7 +466,10 @@
     });
   }
 
+  /* les jeux prennent leurs héros dans la famille : si elle a changé, les
+     vignettes du catalogue doivent changer avec elle */
   function renderGames() {
+    if (Jeux.rafraichir) Jeux.rafraichir();
     els.gamesGrid.innerHTML = '';
     els.gamesGrid.hidden = false;
     els.gameStage.hidden = true;
@@ -782,7 +786,7 @@
       closeReader();
       setTheme(null);
       els.cover.hidden = false; els.home.hidden = true; els.uni.hidden = true;
-      els.games.hidden = true; Jeux.taire();
+      els.games.hidden = true; els.famille.hidden = true; Jeux.taire();
       els.topbar.hidden = true; els.tabs.hidden = true; els.mainnav.hidden = true;
       renderCover();
       window.scrollTo(0, 0);
@@ -791,6 +795,20 @@
 
     els.cover.hidden = true;
     els.topbar.hidden = false; els.mainnav.hidden = false;
+
+    if (parts[0] === 'famille') {                // le créateur de personnages
+      closeReader();
+      Jeux.taire();
+      renderNav('famille');
+      setTheme(null);
+      els.tabs.hidden = true;
+      els.home.hidden = true; els.uni.hidden = true; els.games.hidden = true;
+      els.famille.hidden = false;
+      Perso.ouvrir(els.familleStage);
+      window.scrollTo(0, 0);
+      return;
+    }
+    els.famille.hidden = true;
 
     if (parts[0] === 'jeux') {                   // les jeux
       closeReader();
@@ -879,6 +897,14 @@
     clearTimeout(minuteurUne);
     minuteurUne = setTimeout(dessinerUne, 150);
   });
+
+  /* Pas d'histoire, pas de dé. Le réglage se faisait dans la une, donc le
+     bouton restait visible partout ailleurs. */
+  (function () {
+    var total = 0;
+    UNIVERSES.forEach(function (u) { total += u.stories.length; });
+    els.random.hidden = !total;
+  })();
 
   window.addEventListener('hashchange', route);
   majSoir();

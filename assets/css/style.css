@@ -879,3 +879,93 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
   .cf-item { transition: none; }
   .pages { animation: none; }
 }
+
+/* ============================================================
+   LE CRÉATEUR DE PERSONNAGES
+
+   C'est le seul écran de l'application où l'on a le droit d'écrire des
+   mots : c'est un écran de parent. Mais l'enfant regarde par-dessus
+   l'épaule et montre du doigt, donc tout ce qui se choisit est une
+   grande pastille de couleur ou une image — jamais une liste déroulante.
+   ============================================================ */
+.famille-grille {
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+  margin-bottom: 16px;
+}
+.perso-carte {
+  font-family: inherit; cursor: pointer; text-align: center;
+  background: var(--page); border: 3px solid var(--ink); border-radius: 16px;
+  box-shadow: 0 3px 0 var(--ink); padding: 6px 4px 8px; color: var(--ink);
+  transition: transform .12s, box-shadow .12s;
+}
+.perso-carte:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.perso-vignette { width: 100%; aspect-ratio: 1; }
+.perso-vignette svg { width: 100%; height: 100%; display: block; }
+.perso-nom {
+  font-weight: 700; font-size: 15px; margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.perso-lien { font-size: 11px; color: var(--ink-soft); }
+.perso-ajout { display: flex; flex-direction: column; justify-content: center; }
+.perso-plus { font-size: 42px; line-height: 1; color: var(--ink-soft); }
+
+/* l'aperçu : il est grand, et il est toujours au-dessus du réglage qu'on
+   est en train de changer */
+.perso-apercu {
+  position: sticky; top: 0; z-index: 3;
+  background: var(--page); border-bottom: 3px solid var(--ink);
+  margin: -12px -14px 12px; padding: 6px 0 4px;
+  height: 178px;
+}
+.perso-apercu svg { width: 100%; height: 100%; display: block; }
+
+.reglage { margin-bottom: 14px; }
+.reglage-titre {
+  display: block; margin: 0 2px 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: 1.4px;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.reglage-aide { margin: -2px 2px 8px; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+.reglage-choix { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.pastille {
+  font-family: inherit; cursor: pointer; padding: 0;
+  min-width: 46px; height: 46px;
+  background: var(--page); border: 3px solid var(--ink); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-size: 13px; font-weight: 600;
+  transition: transform .1s, box-shadow .1s;
+}
+.pastille i { display: block; width: 28px; height: 28px; border-radius: 8px; }
+.pastille span { padding: 0 10px; white-space: nowrap; }
+.pastille-large { min-width: 0; }
+.pastille.is-active {
+  box-shadow: 0 0 0 3px var(--jaune); background: #fff;
+  transform: translateY(-1px);
+}
+
+.perso-prenom {
+  font-family: inherit; width: 100%; box-sizing: border-box;
+  font-size: 19px; font-weight: 700; color: var(--ink);
+  padding: 11px 14px; background: var(--page);
+  border: 3px solid var(--ink); border-radius: 12px;
+}
+.perso-prenom.manque { border-color: var(--rouge); background: #fff0ec; }
+.archetype-dit {
+  margin: 8px 2px 0; font-size: 14px; line-height: 1.5;
+  color: var(--ink); font-style: italic;
+}
+
+.perso-actions {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  margin: 22px 0 10px; padding-top: 16px; border-top: 2px dashed var(--ink-soft);
+}
+.chip-danger { color: var(--rouge); }
+.perso-confirme {
+  margin-top: 14px; padding: 12px 14px;
+  background: #fff0ec; border: 3px solid var(--rouge); border-radius: 14px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.perso-confirme p { margin: 0 0 6px; flex: 1 1 100%; }
+.perso-confirme .petit { font-size: 13px; color: var(--ink-soft); }
