@@ -74,12 +74,14 @@
 
   /* chaque histoire porte un numéro, comme les numéros d'un magazine */
   var NUMERO = {};
-  (function () {
+  function NUMEROTER() {
     var n = 0;
+    NUMERO = {};
     UNIVERSES.forEach(function (u) {
       u.stories.forEach(function (s) { NUMERO[u.id + '/' + s.id] = ++n; });
     });
-  })();
+  }
+  NUMEROTER();
   function numero(u, s) { return 'N° ' + NUMERO[u.id + '/' + s.id]; }
   function plageNumeros(u) {
     var ns = u.stories.map(function (s) { return NUMERO[u.id + '/' + s.id]; });
@@ -804,7 +806,13 @@
       els.tabs.hidden = true;
       els.home.hidden = true; els.uni.hidden = true; els.games.hidden = true;
       els.famille.hidden = false;
-      Perso.ouvrir(els.familleStage);
+      /* changer la famille change les héros : on refait les histoires, et
+         on remet à jour le compte affiché sur la une */
+      Perso.ouvrir(els.familleStage, function () {
+        Histoires.oublier();
+        NUMEROTER();
+        els.coverMeta.textContent = '';
+      });
       window.scrollTo(0, 0);
       return;
     }

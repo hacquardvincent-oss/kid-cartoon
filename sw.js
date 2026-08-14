@@ -9,7 +9,7 @@
    Pour publier une mise à jour : changer VERSION. L'ancien cache est
    effacé, le nouveau se remplit, et la page se recharge d'elle-même.
    ============================================================ */
-var VERSION = 'kid-cartoon-2026-08-14c';
+var VERSION = 'kid-cartoon-2026-08-14e';
 
 var FICHIERS = [
   './',
@@ -20,6 +20,7 @@ var FICHIERS = [
   './assets/js/scene.js',
   './assets/js/perso.js',
   './assets/js/stories.js',
+  './assets/js/histoires.js',
   './assets/js/games.js',
   './assets/js/app.js',
   './assets/fonts/fredoka-latin.woff2',

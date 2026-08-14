@@ -68,6 +68,7 @@ assets/js/art.js      le moteur de dessin SVG (silhouettes, décors, objets)
 assets/js/scene.js    NOUVEAU : la mise en scène automatique
 assets/js/perso.js    NOUVEAU : le créateur de personnages et leur stockage
 assets/js/stories.js  les canevas d'histoires (avec des rôles, pas des noms)
+assets/js/histoires.js  la distribution des rôles et la personnalisation
 assets/js/games.js    les jeux et leur cadre commun
 assets/js/app.js      navigation, couverture, lecteur, compteur du soir
 outils/controle-planches.html   le contrôle qualité + le banc d'essai du placement
@@ -270,6 +271,43 @@ Structure qui marche : on installe une situation normale, un grain de sable, le
 sentiment monte et est nommé, quelqu'un propose autre chose, on essaie, ça
 tient — et la dernière planche montre le lendemain.
 
+### Le format d'un canevas — `assets/js/stories.js`
+
+Un canevas ne connaît **aucun prénom**. Il décrit des rôles tenus par des
+archétypes ; `histoires.js` les distribue sur la famille à la lecture.
+Aucune planche ne porte de coordonnée : elle dit qui est là et ce qu'ils
+font, `Scene.composer` place.
+
+```js
+roles: [ { cle: 'rapide', archetype: 'rapide', enfant: true },
+         { cle: 'grand', adulte: true } ],
+planches: [ { decor: 'chambre', qui: ['rapide', 'grand'],
+              poses: { rapide: 'assis' }, humeurs: { rapide: 'fache' },
+              bulles: [ { qui: 'grand', t: 'On souffle comme un dragon ?' } ],
+              texte: '{grand} arriva. {Il:grand} ne ramassa rien.' } ]
+```
+
+Le gabarit de texte est minuscule et le restera : `{role}` le prénom,
+`{il:role}` / `{Il:role}`, `{lui:role}`, `{e:role}` pour l'accord
+(« essoufflé{e:grand} »). **Le français impose le genre** — c'est pour ça
+que chaque personnage en porte un, et c'est un réglage de phrase, pas de
+dessin. Dès qu'un gabarit devient malin, l'écriture devient illisible.
+
+### La distribution
+
+* **Elle est figée à la première lecture.** Sans ça l'histoire changerait
+  de héros d'un soir à l'autre, et à quatre ans ce n'est plus la même
+  histoire.
+* **Personne ne tient deux rôles** dans la même planche.
+* **`moi` passe devant à qualité égale, jamais devant l'archétype.** Une
+  curieuse qui jouerait la range-tout s'entendrait dire « les gens qui
+  rangent voient tout » — et ce serait faux pour elle. Conséquence :
+  **c'est le corpus qui doit couvrir les six tempéraments** pour que
+  chaque enfant soit héros d'un bon tiers des histoires. C'est la vraie
+  raison du chiffre six.
+* **Une famille vide doit pouvoir lire.** Les rôles sans preneur sont
+  tenus par une troupe de figurants (`TROUPE` dans `histoires.js`).
+
 ### Thèmes
 
 Ils traversent les univers, c'est tout leur intérêt : **Amitié, Émotions,
@@ -316,6 +354,9 @@ Les jeux qui se transposent presque sans travail :
    silhouettes plutôt que trois, puisqu'elles étaient toutes prêtes.
 4. **Le gros du travail** : écrire une vingtaine de canevas d'histoires en
    casting par archétype, et vérifier qu'ils tiennent une fois personnalisés.
+   **Commencé** : le format est posé et trois histoires sont écrites
+   (`La tour`, `Le seau rouge`, `Derrière la haie`). Il en manque dix-sept,
+   et il faut qu'elles couvrent les six tempéraments.
 5. Élargir : silhouettes, garde-robe, décors, archétypes, histoires.
 
 Le point 4 est le cœur du produit et le seul vrai risque. La technique suivra ;
@@ -345,6 +386,9 @@ suivant.
 
 ## Ce qui manque encore, et qu'on sait déjà
 
+* **Le parent ne peut pas encore relire ni modifier une histoire.** La
+  décision est prise et le stockage la prépare (la distribution est figée),
+  mais l'écran d'édition n'existe pas.
 * **Les accessoires `cape` et `masque` n'existent pas encore** dans le
   moteur — le créateur ne propose donc que lunettes, couronne, chapeau,
   nœuds et barrette.

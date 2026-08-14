@@ -325,19 +325,36 @@
      au-dessus et sur le côté. */
   function placerBruit(f, boites, iQui, occupe) {
     var tete = boites[iQui].tete;
-    var large = (f.t.length * (f.fs || 54) * .58) / 2;
-    var essais = [
-      { x: tete.d + large * .5, y: tete.h - 18 },
-      { x: tete.g - large * .5, y: tete.h - 18 },
-      { x: (tete.g + tete.d) / 2, y: tete.h - 34 },
-      { x: tete.d + large * .6, y: tete.h + 40 },
-      { x: tete.g - large * .6, y: tete.h + 40 }
-    ];
+    /* Un bruitage est penché de 8°, et un texte large penché est BEAUCOUP
+       plus haut que sa police : « BADABOUM ! » fait 325 unités de large,
+       donc l'inclinaison ajoute à elle seule 45 unités de hauteur. Sans ce
+       calcul, la boîte estimée passe à côté d'un visage que le dessin
+       couvre pour de bon — et le contrôle le signale, à raison. */
+    var fs = f.fs || 54;
+    var lt = f.t.length * fs * .58;
+    var rot = Math.abs(f.rot === undefined ? -8 : f.rot) * Math.PI / 180;
+    var bw = lt * Math.cos(rot) + fs * Math.sin(rot);
+    var bh = lt * Math.sin(rot) + fs * Math.cos(rot);
+    var large = bw / 2 + 6;
+    var dessus = bh * .74 + 6, dessous = bh * .30 + 6;
+    /* Il faut des échappatoires. Sur une planche à deux personnages bras en
+       l'air, toutes les places « juste à côté de la tête » sont prises, et le
+       bruitage finit sur un visage — le défaut que le contrôle attrape le
+       plus souvent. On lui ouvre donc aussi le ciel, au-dessus de tout le
+       monde, où il ne gêne personne. */
+    var cx = (tete.g + tete.d) / 2;
+    var colonnes = [tete.d + large, tete.g - large, cx,
+      tete.d + large * 1.7, tete.g - large * 1.7];
+    var etages = [-20, -62, -108, -150, 34];
+    var essais = [];
+    etages.forEach(function (dy) {
+      colonnes.forEach(function (x) { essais.push({ x: x, y: tete.h + dy }); });
+    });
     var meilleur = null, meilleurScore = -1e9;
     essais.forEach(function (e) {
       var x = Math.max(MARGE + large, Math.min(W - MARGE - large, e.x));
-      var y = Math.max(46, e.y);
-      var r = { g: x - large, d: x + large, h: y - 46, b: y + 12 };
+      var y = Math.max(dessus + 4, e.y);
+      var r = { g: x - large, d: x + large, h: y - dessus, b: y + dessous };
       var score = -Math.abs(x - (tete.g + tete.d) / 2) * .2;
       boites.forEach(function (bo) { if (chevauchent(r, bo.tete, 2)) score -= 600; });
       occupe.forEach(function (o) { if (chevauchent(r, o, 6)) score -= 400; });

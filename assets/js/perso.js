@@ -56,6 +56,20 @@
   var LIENS = ['moi', 'maman', 'papa', 'frère', 'sœur', 'mamie', 'papi',
     'copain', 'copine', 'doudou', 'imaginaire', 'animal'];
 
+  /* En français, une histoire ne peut pas éviter le genre : on écrit « il
+     revint » ou « elle revint », « content » ou « contente ». Ce n'est pas
+     un réglage de dessin, c'est un réglage de PHRASE — et sans lui, tous
+     les canevas seraient condamnés à des tournures contournées.
+     Le lien le devine dans la plupart des cas ; on peut toujours corriger. */
+  var GENRES = ['il', 'elle'];
+  var GENRE_DU_LIEN = {
+    maman: 'elle', 'sœur': 'elle', mamie: 'elle', copine: 'elle',
+    papa: 'il', 'frère': 'il', papi: 'il', copain: 'il'
+  };
+  function genreDe(p) {
+    return p.genre || GENRE_DU_LIEN[p.lien] || 'elle';
+  }
+
   /* ------------------------------------------------------------
      LES PALETTES
      ------------------------------------------------------------ */
@@ -166,7 +180,10 @@
       animal: { poil: PALETTES.poil[0], clair: '#f7e7cf', oreilles: 'tombantes' },
       rond: { couleur: PALETTES.rond[0], forme: 'poire', oreilles: 'rondes', museau: true }
     }[silhouette];
-    return { silhouette: silhouette, prenom: '', lien: 'copain', archetype: 'curieuse', reglages: r };
+    return {
+      silhouette: silhouette, prenom: '', lien: 'copain', genre: 'il',
+      archetype: 'curieuse', reglages: r
+    };
   }
 
   /* le poil clair suit le poil : un animal dont le museau ne s'éclaircit
@@ -381,7 +398,33 @@
 
       rangee('Qui est-ce ?', LIENS,
         function () { return p.lien; },
-        function (v) { p.lien = v; }, mot);
+        function (v) {
+          p.lien = v;
+          /* on suit le lien tant que personne n'a corrigé à la main */
+          if (!p.genreChoisi && GENRE_DU_LIEN[v]) p.genre = GENRE_DU_LIEN[v];
+          majGenre();
+        }, mot);
+
+      var gbloc = el('div', 'reglage');
+      gbloc.appendChild(el('span', 'reglage-titre', 'Dans les histoires, on dit'));
+      var gr = el('div', 'reglage-choix');
+      GENRES.forEach(function (v) {
+        var b = el('button', 'pastille pastille-large', '<span>' + v + '</span>');
+        b.dataset.genre = v;
+        b.onclick = function () {
+          p.genre = v; p.genreChoisi = true; majGenre();
+        };
+        gr.appendChild(b);
+      });
+      gbloc.appendChild(gr);
+      zone.appendChild(gbloc);
+      function majGenre() {
+        Array.prototype.forEach.call(gr.children, function (b) {
+          b.className = 'pastille pastille-large' +
+            (b.dataset.genre === genreDe(p) ? ' is-active' : '');
+        });
+      }
+      majGenre();
 
       /* --- l'archétype : le champ le plus important --- */
       var abloc = el('div', 'reglage');
@@ -475,6 +518,8 @@
     enregistrer: enregistrer,
     supprimer: supprimer,
     archetype: archetype,
+    GENRES: GENRES,
+    genreDe: genreDe,
     pourDessin: pourDessin,
     vignette: vignette,
     ouvrir: ouvrir,

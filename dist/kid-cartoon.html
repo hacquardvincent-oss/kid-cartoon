@@ -3209,19 +3209,36 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
      au-dessus et sur le côté. */
   function placerBruit(f, boites, iQui, occupe) {
     var tete = boites[iQui].tete;
-    var large = (f.t.length * (f.fs || 54) * .58) / 2;
-    var essais = [
-      { x: tete.d + large * .5, y: tete.h - 18 },
-      { x: tete.g - large * .5, y: tete.h - 18 },
-      { x: (tete.g + tete.d) / 2, y: tete.h - 34 },
-      { x: tete.d + large * .6, y: tete.h + 40 },
-      { x: tete.g - large * .6, y: tete.h + 40 }
-    ];
+    /* Un bruitage est penché de 8°, et un texte large penché est BEAUCOUP
+       plus haut que sa police : « BADABOUM ! » fait 325 unités de large,
+       donc l'inclinaison ajoute à elle seule 45 unités de hauteur. Sans ce
+       calcul, la boîte estimée passe à côté d'un visage que le dessin
+       couvre pour de bon — et le contrôle le signale, à raison. */
+    var fs = f.fs || 54;
+    var lt = f.t.length * fs * .58;
+    var rot = Math.abs(f.rot === undefined ? -8 : f.rot) * Math.PI / 180;
+    var bw = lt * Math.cos(rot) + fs * Math.sin(rot);
+    var bh = lt * Math.sin(rot) + fs * Math.cos(rot);
+    var large = bw / 2 + 6;
+    var dessus = bh * .74 + 6, dessous = bh * .30 + 6;
+    /* Il faut des échappatoires. Sur une planche à deux personnages bras en
+       l'air, toutes les places « juste à côté de la tête » sont prises, et le
+       bruitage finit sur un visage — le défaut que le contrôle attrape le
+       plus souvent. On lui ouvre donc aussi le ciel, au-dessus de tout le
+       monde, où il ne gêne personne. */
+    var cx = (tete.g + tete.d) / 2;
+    var colonnes = [tete.d + large, tete.g - large, cx,
+      tete.d + large * 1.7, tete.g - large * 1.7];
+    var etages = [-20, -62, -108, -150, 34];
+    var essais = [];
+    etages.forEach(function (dy) {
+      colonnes.forEach(function (x) { essais.push({ x: x, y: tete.h + dy }); });
+    });
     var meilleur = null, meilleurScore = -1e9;
     essais.forEach(function (e) {
       var x = Math.max(MARGE + large, Math.min(W - MARGE - large, e.x));
-      var y = Math.max(46, e.y);
-      var r = { g: x - large, d: x + large, h: y - 46, b: y + 12 };
+      var y = Math.max(dessus + 4, e.y);
+      var r = { g: x - large, d: x + large, h: y - dessus, b: y + dessous };
       var score = -Math.abs(x - (tete.g + tete.d) / 2) * .2;
       boites.forEach(function (bo) { if (chevauchent(r, bo.tete, 2)) score -= 600; });
       occupe.forEach(function (o) { if (chevauchent(r, o, 6)) score -= 400; });
@@ -3423,6 +3440,20 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
   var LIENS = ['moi', 'maman', 'papa', 'frère', 'sœur', 'mamie', 'papi',
     'copain', 'copine', 'doudou', 'imaginaire', 'animal'];
 
+  /* En français, une histoire ne peut pas éviter le genre : on écrit « il
+     revint » ou « elle revint », « content » ou « contente ». Ce n'est pas
+     un réglage de dessin, c'est un réglage de PHRASE — et sans lui, tous
+     les canevas seraient condamnés à des tournures contournées.
+     Le lien le devine dans la plupart des cas ; on peut toujours corriger. */
+  var GENRES = ['il', 'elle'];
+  var GENRE_DU_LIEN = {
+    maman: 'elle', 'sœur': 'elle', mamie: 'elle', copine: 'elle',
+    papa: 'il', 'frère': 'il', papi: 'il', copain: 'il'
+  };
+  function genreDe(p) {
+    return p.genre || GENRE_DU_LIEN[p.lien] || 'elle';
+  }
+
   /* ------------------------------------------------------------
      LES PALETTES
      ------------------------------------------------------------ */
@@ -3533,7 +3564,10 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
       animal: { poil: PALETTES.poil[0], clair: '#f7e7cf', oreilles: 'tombantes' },
       rond: { couleur: PALETTES.rond[0], forme: 'poire', oreilles: 'rondes', museau: true }
     }[silhouette];
-    return { silhouette: silhouette, prenom: '', lien: 'copain', archetype: 'curieuse', reglages: r };
+    return {
+      silhouette: silhouette, prenom: '', lien: 'copain', genre: 'il',
+      archetype: 'curieuse', reglages: r
+    };
   }
 
   /* le poil clair suit le poil : un animal dont le museau ne s'éclaircit
@@ -3748,7 +3782,33 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
 
       rangee('Qui est-ce ?', LIENS,
         function () { return p.lien; },
-        function (v) { p.lien = v; }, mot);
+        function (v) {
+          p.lien = v;
+          /* on suit le lien tant que personne n'a corrigé à la main */
+          if (!p.genreChoisi && GENRE_DU_LIEN[v]) p.genre = GENRE_DU_LIEN[v];
+          majGenre();
+        }, mot);
+
+      var gbloc = el('div', 'reglage');
+      gbloc.appendChild(el('span', 'reglage-titre', 'Dans les histoires, on dit'));
+      var gr = el('div', 'reglage-choix');
+      GENRES.forEach(function (v) {
+        var b = el('button', 'pastille pastille-large', '<span>' + v + '</span>');
+        b.dataset.genre = v;
+        b.onclick = function () {
+          p.genre = v; p.genreChoisi = true; majGenre();
+        };
+        gr.appendChild(b);
+      });
+      gbloc.appendChild(gr);
+      zone.appendChild(gbloc);
+      function majGenre() {
+        Array.prototype.forEach.call(gr.children, function (b) {
+          b.className = 'pastille pastille-large' +
+            (b.dataset.genre === genreDe(p) ? ' is-active' : '');
+        });
+      }
+      majGenre();
 
       /* --- l'archétype : le champ le plus important --- */
       var abloc = el('div', 'reglage');
@@ -3842,6 +3902,8 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
     enregistrer: enregistrer,
     supprimer: supprimer,
     archetype: archetype,
+    GENRES: GENRES,
+    genreDe: genreDe,
     pourDessin: pourDessin,
     vignette: vignette,
     ouvrir: ouvrir,
@@ -3854,18 +3916,16 @@ main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
 /* ============================================================
    stories.js — les canevas d'histoires
 
-   VOLONTAIREMENT VIDE. Le contenu de ce fichier repart de zéro :
-   les histoires ne seront pas écrites pour des personnages nommés
-   mais pour des ARCHÉTYPES (le grognon, la timide, le rapide…),
-   distribués au moment de la lecture sur les personnages que la
-   famille a créés. Tant que le créateur de personnages et le format
-   des canevas ne sont pas posés, on n'écrit rien : une histoire
-   écrite pour un héros nommé serait à réécrire entièrement.
+   Les histoires ne sont pas écrites pour des personnages nommés mais
+   pour des ARCHÉTYPES (le grognon, la timide, le rapide…), distribués
+   au moment de la lecture sur les personnages que la famille a créés.
+   C'est `histoires.js` qui fait cette distribution ; ici, on écrit.
 
-   Ce fichier ne garde donc que trois choses :
-     - THEMES      : les axes de rangement, qui traversent les univers
-     - UNIVERSES   : la liste des recueils, vide pour l'instant
-     - COUVERTURE  : la une, dessinée avec les silhouettes génériques
+   Ce fichier contient :
+     - THEMES      : les axes de rangement, qui traversent les recueils
+     - UNIVERSES   : rempli par histoires.js au démarrage
+     - COUVERTURE  : la une
+     - CANEVAS     : les histoires elles-mêmes
    ============================================================ */
 
 /* Les thèmes traversent les univers, c'est tout leur intérêt : un parent
@@ -3883,15 +3943,8 @@ var THEMES = [
   { id: 'betises', nom: 'Bêtises', emoji: '🙃' }
 ];
 
-/* Aucun recueil pour l'instant. Le format d'une entrée, pour mémoire :
-
-   { id, name, emoji, tagline, c1, c2, cover: <scène>,
-     stories: [ { id, title, subtitle, tag, minutes, themes: [],
-                  cover: <scène>, pages: [ { scene, text } ] } ] }
-
-   Il manque encore la brique qui décidera de `scene` : le placement
-   automatique. Tant qu'il n'est pas là, une planche écrite à la main
-   serait à replacer une fois les personnages devenus variables. */
+/* Rempli au démarrage par `histoires.js`, qui personnalise chaque canevas
+   avec la famille du moment. On ne l'écrit jamais à la main. */
 var UNIVERSES = [];
 
 /* ------------------------------------------------------------
@@ -3975,6 +4028,559 @@ var COUVERTURE = {
     ]
   }
 };
+
+/* ============================================================
+   LES CANEVAS
+
+   Un canevas ne connaît aucun prénom. Il décrit des RÔLES tenus par des
+   ARCHÉTYPES, et `histoires.js` les distribue sur la famille au moment de
+   la lecture. Aucune planche ne porte de coordonnée : elle dit qui est là
+   et ce qu'ils font, la mise en scène place.
+
+   La voix, telle qu'elle a fait ses preuves sur soixante-trois histoires :
+   des phrases courtes au passé simple, une émotion NOMMÉE, une réparation
+   concrète, pas de morale finale — la dernière phrase constate, elle ne
+   conclut pas —, et un peu d'humour qui passe au-dessus de l'enfant sans
+   le gêner. L'adulte n'est pas tout-puissant : il attend, il se trompe,
+   il arrive essoufflé avec une chaussette à la main.
+   ============================================================ */
+var CANEVAS = [
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'la-tour',
+    titre: 'La tour',
+    sous: 'la colère, et ce qu\'on en fait',
+    themes: ['Émotions', 'Bêtises'],
+    minutes: 4,
+    roles: [
+      { cle: 'rapide', archetype: 'rapide', enfant: true },
+      { cle: 'temoin', archetype: 'rangetout', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rapide', 'temoin'],
+        poses: { rapide: 'assis', temoin: 'debout' },
+        fond: [{ t: 'etagere', x: 160, y: 400, s: .85 }],
+        avant: [{ t: 'tourcubes', x: 690, y: 552, s: .9, n: 5 }],
+        texte: '{rapide} posa un cube, puis un autre, puis encore un autre. ' +
+          'La tour montait bien. {temoin} regardait sans rien dire, ce qui est ' +
+          'une façon de participer.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rapide', 'temoin'],
+        poses: { rapide: 'brasenlair', temoin: 'hausse' },
+        humeurs: { rapide: 'surpris', temoin: 'surpris' },
+        bruits: [{ qui: 'rapide', t: 'BADABOUM !' }],
+        avant: [{ t: 'cube', x: 660, y: 550, s: 1.3, color: '#e0453c' },
+          { t: 'cube', x: 730, y: 556, s: 1.2, color: '#4a7fc1' },
+          { t: 'cube', x: 116, y: 552, s: 1.2, color: '#7ab648' }],
+        texte: 'Au huitième cube, la tour pencha. Puis elle tomba. Les cubes ' +
+          'roulèrent sous le lit, là où on ne les retrouve jamais.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rapide'],
+        poses: { rapide: 'brasenlair' }, humeurs: { rapide: 'fache' },
+        bruits: [{ qui: 'rapide', t: 'AAAAH !' }],
+        texte: '{rapide} tapa le sol avec sa main. {Il:rapide} cria très fort. ' +
+          '{Il:rapide} n\'était pas triste : {il:rapide} était en colère. ' +
+          'Ça s\'appelle la colère, et ça fait très chaud dans la poitrine.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rapide', 'grand'],
+        poses: { rapide: 'assis', grand: 'assis' },
+        humeurs: { rapide: 'fache', grand: 'content' },
+        texte: '{grand} arriva. {Il:grand} ne ramassa rien du tout. ' +
+          '{Il:grand} s\'assit par terre, à côté, et {il:grand} attendit. ' +
+          'C\'est très long, quand on attend avec quelqu\'un qui crie.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['grand', 'rapide'],
+        poses: { grand: 'montre', rapide: 'debout' },
+        humeurs: { rapide: 'triste' },
+        bulles: [{ qui: 'grand', t: 'On souffle comme un dragon ?' }],
+        texte: '{rapide} souffla une première fois pour rien, une deuxième fois ' +
+          'pour de vrai, et une troisième fois parce que c\'était rigolo.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rapide', 'temoin', 'grand'],
+        poses: { rapide: 'tient', temoin: 'montre', grand: 'tient' },
+        avant: [{ t: 'tourcubes', x: 700, y: 552, s: .8, n: 3 }],
+        texte: 'On refit la tour autrement : large en bas, petite en haut. ' +
+          'Elle était beaucoup moins jolie. Elle ne tomba pas.'
+      },
+      {
+        decor: 'chambre', heure: 'matin',
+        qui: ['rapide'],
+        poses: { rapide: 'montre' },
+        avant: [{ t: 'tourcubes', x: 660, y: 552, s: .8, n: 3 }],
+        texte: 'Le lendemain matin, la tour était encore debout. {rapide} la ' +
+          'regarda un moment. Puis {il:rapide} la fit tomber exprès, pour voir.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'le-seau-rouge',
+    titre: 'Le seau rouge',
+    sous: 'demander, c\'est difficile',
+    themes: ['Partager', 'Amitié'],
+    minutes: 4,
+    roles: [
+      { cle: 'proprio', archetype: 'rangetout', enfant: true },
+      { cle: 'timide', archetype: 'timide', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['proprio'],
+        poses: { proprio: 'assis' },
+        fond: [{ t: 'parasol', x: 120, y: 430, s: .9, color: '#ff5c8a' }],
+        avant: [{ t: 'seau', x: 640, y: 532, s: 1.1, color: '#e0453c' },
+          { t: 'coquillage', x: 730, y: 552, s: 1.6 },
+          { t: 'coquillage', x: 100, y: 550, s: 1.4 }],
+        texte: '{proprio} avait un seau rouge. {Il:proprio} y rangeait les ' +
+          'coquillages par taille : les grands d\'un côté, les petits de l\'autre, ' +
+          'et les cassés nulle part.'
+      },
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['timide', 'proprio'],
+        poses: { timide: 'debout', proprio: 'assis' },
+        humeurs: { timide: 'triste' },
+        avant: [{ t: 'seau', x: 700, y: 532, s: 1.1, color: '#e0453c' }],
+        texte: '{timide} regardait le seau. {Il:timide} le voulait très fort. ' +
+          '{Il:timide} ouvrit la bouche pour demander, et il n\'en sortit rien du tout.'
+      },
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['timide', 'proprio'],
+        poses: { timide: 'tient', proprio: 'montre' },
+        humeurs: { timide: 'surpris', proprio: 'fache' },
+        bulles: [{ qui: 'proprio', t: 'Rends-le !' }],
+        texte: 'Quand {proprio} regarda ailleurs, {timide} prit le seau. ' +
+          '{Il:proprio} le vit tout de suite. Les gens qui rangent voient tout.'
+      },
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['timide'],
+        poses: { timide: 'debout' }, humeurs: { timide: 'triste' },
+        texte: '{timide} rendit le seau. {Il:timide} avait très chaud aux oreilles. ' +
+          'Ça s\'appelle la honte, et ça arrive toujours après l\'envie, ' +
+          'jamais avant.'
+      },
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['grand', 'timide'],
+        poses: { grand: 'assis', timide: 'debout' },
+        bulles: [{ qui: 'grand', t: 'Tu peux demander, tu sais.' }],
+        texte: '{grand} ne gronda personne. {Il:grand} dit seulement ça, et ' +
+          'retourna lire. {timide} demanda. {Il:timide} demanda si bas que ' +
+          'personne n\'entendit.'
+      },
+      {
+        decor: 'plage', heure: 'jour',
+        qui: ['timide', 'proprio'],
+        poses: { timide: 'montre', proprio: 'tient' },
+        humeurs: { proprio: 'content' },
+        avant: [{ t: 'seau', x: 690, y: 532, s: 1.1, color: '#e0453c' }],
+        texte: '{Il:timide} demanda une deuxième fois, un peu plus fort. ' +
+          '{proprio} réfléchit très longtemps, pour le plaisir. Puis {il:proprio} ' +
+          'dit oui — à condition de ranger les coquillages par taille.'
+      },
+      {
+        decor: 'plage', heure: 'couchant',
+        qui: ['timide', 'proprio'],
+        poses: { timide: 'salue', proprio: 'tient' },
+        avant: [{ t: 'seau', x: 700, y: 532, s: 1.1, color: '#e0453c' },
+          { t: 'chateausable', x: 120, y: 552, s: .7 }],
+        texte: 'Le lendemain, {timide} demanda tout de suite. {proprio} dit non. ' +
+          '{Il:timide} demanda encore, et cette fois {il:proprio} dit oui. ' +
+          'Ça marche une fois sur deux. C\'est déjà beaucoup.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'derriere-la-haie',
+    titre: 'Derrière la haie',
+    sous: 'la règle, et pourquoi elle existe',
+    themes: ['Règles', 'Dehors'],
+    minutes: 4,
+    roles: [
+      { cle: 'curieuse', archetype: 'curieuse', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['curieuse'],
+        poses: { curieuse: 'montre' },
+        fond: [{ t: 'buisson', x: 120, y: 402, s: 1.3 }, { t: 'buisson', x: 300, y: 402, s: 1.3 },
+          { t: 'buisson', x: 480, y: 402, s: 1.3 }, { t: 'buisson', x: 660, y: 402, s: 1.3 }],
+        avant: [{ t: 'fleur', x: 90, y: 550, s: 1.6 }],
+        texte: 'Au fond du jardin, il y avait une haie. Derrière la haie, on ne ' +
+          'savait pas. C\'est exactement le genre de chose que {curieuse} ne ' +
+          'supporte pas.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['grand', 'curieuse'],
+        poses: { grand: 'montre', curieuse: 'hausse' },
+        bulles: [{ qui: 'grand', t: 'On ne passe pas derrière la haie.' }],
+        fond: [{ t: 'buisson', x: 160, y: 402, s: 1.3 }, { t: 'buisson', x: 640, y: 402, s: 1.3 }],
+        texte: '{grand} le dit une seule fois, calmement, ce qui est très ' +
+          'énervant. Puis {il:grand} retourna étendre le linge.'
+      },
+      {
+        decor: 'foret', heure: 'gris',
+        qui: ['curieuse'],
+        poses: { curieuse: 'debout' }, humeurs: { curieuse: 'surpris' },
+        texte: '{curieuse} trouva un trou. {Il:curieuse} passa la tête, puis une ' +
+          'épaule, puis tout le reste. De l\'autre côté, il y avait des arbres ' +
+          'serrés, tout gris, et personne dedans.'
+      },
+      {
+        decor: 'foret', heure: 'gris',
+        qui: ['curieuse'],
+        poses: { curieuse: 'hausse' }, humeurs: { curieuse: 'triste' },
+        texte: '{Il:curieuse} se retourna. La haie était pareille partout. Le trou ' +
+          'avait disparu. {Il:curieuse} eut froid dans le ventre : ça s\'appelle ' +
+          'la peur.'
+      },
+      {
+        decor: 'foret', heure: 'gris',
+        qui: ['curieuse', 'grand'],
+        poses: { curieuse: 'brasenlair', grand: 'court' },
+        humeurs: { curieuse: 'triste', grand: 'surpris' },
+        bruits: [{ qui: 'curieuse', t: 'OHÉ !' }],
+        texte: '{Il:curieuse} appela. Pas très fort, parce qu\'appeler, c\'est déjà ' +
+          'avouer. {grand} arriva en trois secondes, essoufflé{e:grand}, avec une ' +
+          'chaussette à la main.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['grand', 'curieuse'],
+        poses: { grand: 'montre', curieuse: 'debout' },
+        fond: [{ t: 'buisson', x: 200, y: 402, s: 1.3 }, { t: 'buisson', x: 620, y: 402, s: 1.3 }],
+        avant: [{ t: 'fleur', x: 740, y: 550, s: 1.6, color: '#e0453c' }],
+        texte: '{grand} ne gronda pas tout de suite. {Il:grand} montra la route, ' +
+          'juste derrière les arbres, et les voitures dessus. C\'est pour ça, ' +
+          'la règle. Puis {il:grand} attacha un ruban rouge à la branche du trou.'
+      },
+      {
+        decor: 'jardin', heure: 'matin',
+        qui: ['curieuse'],
+        poses: { curieuse: 'montre' },
+        fond: [{ t: 'buisson', x: 180, y: 402, s: 1.3 }, { t: 'buisson', x: 620, y: 402, s: 1.3 }],
+        avant: [{ t: 'fleur', x: 700, y: 548, s: 1.7, color: '#e0453c' }],
+        texte: 'Le lendemain, {curieuse} alla jusqu\'au ruban. {Il:curieuse} ' +
+          's\'arrêta. {Il:curieuse} passa la tête, regarda bien, et revint. ' +
+          'Le ruban est toujours là.'
+      }
+    ]
+  }
+];
+
+/* ============================================================
+   histoires.js — du canevas à l'histoire du soir
+
+   UN CANEVAS N'EST PAS UNE HISTOIRE
+
+   Un canevas ne connaît aucun prénom. Il décrit des RÔLES — « celui qui
+   fonce », « celle qui range » — et ce qui leur arrive. Au moment de la
+   lecture, on distribue ces rôles sur les personnages que la famille a
+   créés, et l'histoire devient celle de cet enfant-là.
+
+   C'est ce qui permet d'écrire des phrases précises sans écrire pour
+   personne : « Il ne demanda pas. Il prit. » vaut pour n'importe quel
+   rapide, et ne vaut que pour un rapide.
+
+   TROIS CHOSES QUI ONT L'AIR DE DÉTAILS ET N'EN SONT PAS
+
+   1. Le casting est FIGÉ à la première lecture. Sans ça, l'histoire
+      changerait de héros d'un soir à l'autre — et à quatre ans, ce n'est
+      pas la même histoire.
+   2. Le français impose le genre. On ne peut pas écrire « content » sans
+      savoir. Le gabarit `{e:role}` sert exactement à ça.
+   3. Une famille peut être vide, ou n'avoir qu'un personnage. Une
+      histoire doit quand même se lire le premier soir : les rôles qui ne
+      trouvent personne sont tenus par des figurants.
+   ============================================================ */
+(function (global) {
+  'use strict';
+
+  var CLE_DISTRIB = 'kidcartoon.v1.distributions';
+
+  /* ------------------------------------------------------------
+     LA TROUPE DE FIGURANTS
+
+     Ils ne servent qu'à combler : dès qu'un personnage de la famille peut
+     tenir le rôle, c'est lui qui passe devant.
+     ------------------------------------------------------------ */
+  var TROUPE = [
+    { prenom: 'Lou', genre: 'elle', archetype: 'curieuse', silhouette: 'enfant',
+      reglages: { teint: '#f2c49a', cheveux: '#4a2f22', coiffure: 'boucles',
+        vetement: '#3ec9c9', haut: 'teeshirt', bas: 'jupe', couleurBas: '#8a3f5c' } },
+    { prenom: 'Tino', genre: 'il', archetype: 'rapide', silhouette: 'enfant',
+      reglages: { teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre',
+        vetement: '#e8746b', haut: 'teeshirt', bas: 'short', couleurBas: '#4a6ea8' } },
+    { prenom: 'Nena', genre: 'elle', archetype: 'rangetout', silhouette: 'enfant',
+      reglages: { teint: '#c9885c', cheveux: '#2f2118', coiffure: 'deuxtresses',
+        vetement: '#a98cf0', haut: 'pull', bas: 'pantalon', couleurBas: '#3f4a5c' } },
+    { prenom: 'Sami', genre: 'il', archetype: 'timide', silhouette: 'enfant',
+      reglages: { teint: '#e8b98f', cheveux: '#6b4a33', coiffure: 'carre',
+        vetement: '#7ab648', haut: 'teeshirt', bas: 'pantalon', couleurBas: '#7a4a2c' } },
+    { prenom: 'Bidou', genre: 'il', archetype: 'farceur', silhouette: 'rond',
+      reglages: { couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true } },
+    { prenom: 'Maman', genre: 'elle', archetype: 'rangetout', silhouette: 'adulte', lien: 'maman',
+      reglages: { teint: '#f2c49a', cheveux: '#6b4a33', coiffure: 'queue',
+        vetement: '#4f8a7a', haut: 'pull', bas: 'pantalon', couleurBas: '#3f4a5c' } },
+    { prenom: 'Papa', genre: 'il', archetype: 'grognon', silhouette: 'adulte', lien: 'papa',
+      reglages: { teint: '#e8b98f', cheveux: '#3c2a20', coiffure: 'carre',
+        vetement: '#5aa9e8', haut: 'pull', bas: 'pantalon', couleurBas: '#2f2118' } }
+  ];
+
+  function famille() {
+    return (global.Perso && Perso.tous()) || [];
+  }
+
+  /* ------------------------------------------------------------
+     LA DISTRIBUTION
+
+     Chaque rôle demande un archétype ; à défaut, un adulte, ou n'importe
+     qui. Personne ne tient deux rôles : dans une histoire à trois, voir
+     deux fois le même enfant casse tout.
+     ------------------------------------------------------------ */
+  /* À qualité égale, c'est l'enfant qui joue : « moi » passe devant dans le
+     vivier retenu, mais il ne double JAMAIS l'archétype. Une curieuse qui
+     tiendrait le rôle de la range-tout entendrait « les gens qui rangent
+     voient tout » — et ce serait faux pour elle. C'est le corpus qui doit
+     couvrir les six tempéraments, pas la distribution qui doit tricher. */
+  function moiDabord(liste) {
+    var moi = liste.filter(function (p) { return p.lien === 'moi'; });
+    return moi.length ? moi.concat(liste) : liste;
+  }
+
+  function candidats(role, gens, pris) {
+    var libres = gens.filter(function (p) { return !pris[cleDe(p)]; });
+    var f = [];
+    if (role.archetype) {
+      f = moiDabord(libres.filter(function (p) { return p.archetype === role.archetype; }));
+    }
+    if (!f.length && role.adulte) {
+      f = libres.filter(function (p) { return p.silhouette === 'adulte'; });
+    }
+    if (!f.length && role.enfant) {
+      f = libres.filter(function (p) { return p.silhouette === 'enfant'; });
+    }
+    return f.length ? f : libres;
+  }
+  function cleDe(p) { return p.id || ('troupe:' + p.prenom); }
+
+  function distribuer(canevas) {
+    var gens = famille(), pris = {}, roles = {};
+    canevas.roles.forEach(function (r) {
+      /* la famille d'abord, la troupe ensuite — et jamais deux fois la
+         même personne dans la même histoire */
+      var c = candidats(r, gens, pris)[0] || candidats(r, TROUPE, pris)[0];
+      if (!c) c = TROUPE[0];
+      pris[cleDe(c)] = true;
+      roles[r.cle] = c;
+    });
+    return roles;
+  }
+
+  /* On fige la distribution : la même histoire garde ses héros d'un soir à
+     l'autre. Si un personnage a été supprimé entre-temps, son rôle est
+     redistribué — et l'histoire le dit au parent plutôt que de faire
+     semblant. */
+  function distribution(canevas) {
+    var stock = {};
+    try { stock = JSON.parse(localStorage.getItem(CLE_DISTRIB) || '{}'); } catch (e) { }
+    var gens = famille(), parId = {}, i;
+    for (i = 0; i < gens.length; i++) parId[gens[i].id] = gens[i];
+    for (i = 0; i < TROUPE.length; i++) parId['troupe:' + TROUPE[i].prenom] = TROUPE[i];
+
+    var fige = stock[canevas.id], roles = {}, complet = true;
+    if (fige) {
+      canevas.roles.forEach(function (r) {
+        var p = parId[fige[r.cle]];
+        if (p) roles[r.cle] = p; else complet = false;
+      });
+      if (complet) return { roles: roles, refait: false };
+    }
+    roles = distribuer(canevas);
+    var aRanger = {};
+    canevas.roles.forEach(function (r) { aRanger[r.cle] = cleDe(roles[r.cle]); });
+    stock[canevas.id] = aRanger;
+    try { localStorage.setItem(CLE_DISTRIB, JSON.stringify(stock)); } catch (e) { }
+    return { roles: roles, refait: !!fige };
+  }
+
+  /* ------------------------------------------------------------
+     LE TEXTE
+
+     Un gabarit minuscule, mais qui couvre ce dont une histoire a besoin :
+       {heros}     le prénom
+       {il:heros}  il / elle          {Il:heros} en début de phrase
+       {lui:heros} lui / elle
+       {e:heros}   '' / 'e'   →  « content{e:heros} »
+     Une majuscule sur le gabarit met une majuscule sur le mot : sans ça,
+     toutes les phrases devraient commencer par un prénom, et ça s'entend
+     à la lecture à voix haute. Rien de plus : dès qu'un gabarit devient
+     malin, l'écriture devient illisible, et c'est l'écriture qui compte.
+     ------------------------------------------------------------ */
+  function genre(p) {
+    return (global.Perso && Perso.genreDe) ? Perso.genreDe(p) : (p.genre || 'elle');
+  }
+
+  function majuscule(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  function texte(modele, roles) {
+    return String(modele).replace(/\{(\w+)(?::(\w+))?\}/g, function (tout, a, b) {
+      var cle = b || a, p = roles[cle];
+      if (!p) return tout;
+      var grand = /^[A-ZÉÀ]/.test(a);
+      var mot = a.toLowerCase();
+      var f = genre(p) === 'elle';
+      var out;
+      if (!b) return p.prenom;
+      if (mot === 'il') out = f ? 'elle' : 'il';
+      else if (mot === 'lui') out = f ? 'elle' : 'lui';
+      else if (mot === 'e') out = f ? 'e' : '';
+      else out = p.prenom;
+      return grand ? majuscule(out) : out;
+    });
+  }
+
+  /* ------------------------------------------------------------
+     LA PLANCHE
+
+     Une planche ne porte aucune coordonnée : elle dit qui est là et ce
+     qu'ils font. C'est `Scene.composer` qui place — et c'est la seule
+     raison pour laquelle une histoire écrite une fois marche avec un
+     bébé, une mamie et un doudou aussi bien qu'avec trois enfants.
+     ------------------------------------------------------------ */
+  function fusion(a, b) {
+    var o = {}, k;
+    for (k in a) if (a.hasOwnProperty(k)) o[k] = a[k];
+    for (k in b) if (b.hasOwnProperty(k)) o[k] = b[k];
+    return o;
+  }
+
+  function dessinDe(p, extra) {
+    var base = (global.Perso && p.reglages)
+      ? Perso.pourDessin(p) : fusion({ t: p.silhouette }, p.reglages);
+    return fusion(base, extra);
+  }
+
+  function composerPlanche(pl, roles) {
+    var qui = pl.qui || [];
+    var casting = qui.map(function (cle) {
+      return dessinDe(roles[cle], {
+        pose: (pl.poses && pl.poses[cle]) || 'debout',
+        humeur: (pl.humeurs && pl.humeurs[cle]) || 'content'
+      });
+    });
+    var bulles = (pl.bulles || []).map(function (b) {
+      return { qui: Math.max(0, qui.indexOf(b.qui)), t: texte(b.t, roles) };
+    });
+    var bruits = (pl.bruits || []).map(function (b) {
+      return { qui: Math.max(0, qui.indexOf(b.qui)), t: b.t };
+    });
+    return Scene.composer({
+      decor: pl.decor, heure: pl.heure, flocons: pl.flocons,
+      casting: casting, fond: pl.fond, avant: pl.avant,
+      bulles: bulles.length ? bulles : null,
+      bruits: bruits.length ? bruits : null
+    });
+  }
+
+  /* ------------------------------------------------------------
+     L'HISTOIRE PERSONNALISÉE
+
+     C'est la forme que le lecteur attend : un titre, une couverture, des
+     pages. On la fabrique une fois, et on la garde en mémoire pour la
+     session — recomposer vingt planches à chaque ouverture de la
+     bibliothèque ferait ramer un téléphone.
+     ------------------------------------------------------------ */
+  var enMemoire = {};
+
+  function personnaliser(canevas) {
+    if (enMemoire[canevas.id]) return enMemoire[canevas.id];
+    var d = distribution(canevas);
+    var roles = d.roles;
+    var pages = canevas.planches.map(function (pl) {
+      return { scene: composerPlanche(pl, roles), text: texte(pl.texte, roles) };
+    });
+    var h = {
+      id: canevas.id,
+      title: texte(canevas.titre, roles),
+      subtitle: texte(canevas.sous, roles),
+      tag: canevas.themes[0],
+      themes: canevas.themes,
+      minutes: canevas.minutes || Math.max(2, Math.round(pages.length * 0.6)),
+      cover: pages[0].scene,
+      pages: pages,
+      /* de quoi afficher « avec Camille, Papa et Bidou » */
+      distribution: canevas.roles.map(function (r) { return roles[r.cle].prenom; }),
+      redistribue: d.refait
+    };
+    enMemoire[canevas.id] = h;
+    return h;
+  }
+
+  /* Quand la famille change, tout est à refaire : les héros ne sont plus
+     les mêmes. On oublie ce qu'on avait composé, on garde les
+     distributions figées (elles se répareront toutes seules). */
+  function oublier() { enMemoire = {}; }
+
+  /* ------------------------------------------------------------
+     LE RECUEIL
+
+     Un seul, pour l'instant : il n'y a pas encore de quoi en faire deux,
+     et un onglet unique vaut mieux qu'une taxinomie vide.
+     ------------------------------------------------------------ */
+  function construire() {
+    if (!global.CANEVAS || !global.UNIVERSES) return;
+    UNIVERSES.length = 0;
+    var histoires = CANEVAS.map(personnaliser);
+    if (!histoires.length) return;
+    UNIVERSES.push({
+      id: 'maison', name: 'À la maison', emoji: '🏠',
+      tagline: 'Des histoires avec vos personnages.',
+      c1: '#d8342b', c2: '#f7c518',
+      cover: histoires[0].cover,
+      stories: histoires
+    });
+  }
+
+  global.Histoires = {
+    TROUPE: TROUPE,
+    texte: texte,
+    distribuer: distribuer,
+    distribution: distribution,
+    personnaliser: personnaliser,
+    composerPlanche: composerPlanche,
+    construire: construire,
+    oublier: function () { oublier(); construire(); }
+  };
+
+  /* On construit tout de suite : `app.js` lit UNIVERSES au chargement, et
+     une bibliothèque vide au premier affichage ne se rattrape pas. */
+  construire();
+})(window);
 
 /* ============================================================
    games.js — les jeux (3 à 5 ans)
@@ -5063,12 +5669,14 @@ var COUVERTURE = {
 
   /* chaque histoire porte un numéro, comme les numéros d'un magazine */
   var NUMERO = {};
-  (function () {
+  function NUMEROTER() {
     var n = 0;
+    NUMERO = {};
     UNIVERSES.forEach(function (u) {
       u.stories.forEach(function (s) { NUMERO[u.id + '/' + s.id] = ++n; });
     });
-  })();
+  }
+  NUMEROTER();
   function numero(u, s) { return 'N° ' + NUMERO[u.id + '/' + s.id]; }
   function plageNumeros(u) {
     var ns = u.stories.map(function (s) { return NUMERO[u.id + '/' + s.id]; });
@@ -5793,7 +6401,13 @@ var COUVERTURE = {
       els.tabs.hidden = true;
       els.home.hidden = true; els.uni.hidden = true; els.games.hidden = true;
       els.famille.hidden = false;
-      Perso.ouvrir(els.familleStage);
+      /* changer la famille change les héros : on refait les histoires, et
+         on remet à jour le compte affiché sur la une */
+      Perso.ouvrir(els.familleStage, function () {
+        Histoires.oublier();
+        NUMEROTER();
+        els.coverMeta.textContent = '';
+      });
       window.scrollTo(0, 0);
       return;
     }
