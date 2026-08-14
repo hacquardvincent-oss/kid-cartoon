@@ -314,11 +314,28 @@ suivant.
 
 ---
 
+## Décisions prises
+
+* **La garde-robe : deux réglages, pas un.** `haut` (tee-shirt, pull, robe) et
+  `bas` (pantalon, short, jupe), découplés. C'est plus riche pour le créateur
+  de personnages qu'un simple bas, mais ça a un coût de vérification : chaque
+  pose est à revoir sur la **combinaison** des deux, pas sur chacun séparément.
+  À faire avant le créateur de personnages — un papa en robe, ça ne passe pas.
+* **Six archétypes.** C'est ce chiffre, et pas le nombre de personnages, qui
+  fixe le volume d'écriture : six tempéraments × une vingtaine de canevas.
+* **Le parent peut relire et modifier une histoire avant le coucher.**
+  Conséquence directe sur le stockage : on ne garde pas seulement le canevas,
+  on **fige la version personnalisée** au moment où elle est lue. Le format de
+  sauvegarde doit le prévoir dès le départ.
+
 ## Ce qui manque encore, et qu'on sait déjà
 
-* **La garde-robe.** La fabrique `enfant` ne dessine qu'une tunique. Un papa,
-  un grand frère ou un copain en robe, ça ne passe pas. Il faut au minimum un
-  bas (`pantalon`, `short`, `jupe`) avant d'écrire des histoires de famille.
+* **Un personnage supprimé casse les histoires déjà lues.** On a choisi de ne
+  PAS recopier le casting dans l'histoire. Il faut donc décider ce qui se
+  passe quand l'enfant supprime le doudou dont une histoire d'hier se
+  souvient : une silhouette de repli ? l'histoire qui disparaît des « déjà
+  lues » ? un avertissement au parent au moment de la suppression ? À trancher
+  avant d'écrire le stockage des personnages.
 * **Les jeux tiennent un casting d'attente** (`CASTING` dans `games.js`) et
   une liste de prénoms d'attente. Le jour où la famille existe, ce sont ces
   deux listes qu'on remplace — et rien d'autre.
