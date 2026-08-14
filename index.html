@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<title>Kid Cartoon — histoires du soir et jeux</title>
+<meta name="description" content="Des histoires du soir en bandes dessinées et des jeux pour les 3-6 ans, avec les personnages inventés par l'enfant. Tout est dessiné sur l'appareil, rien ne sort du téléphone.">
+<meta name="theme-color" content="#d8342b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Kid Cartoon">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icone-192.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="grain-layer" aria-hidden="true"></div>
+
+<header class="topbar">
+  <button class="logo" id="btnLogo" aria-label="Retour à l'accueil">
+    <span class="logo-txt"><b>KID</b><i>CARTOON</i></span>
+  </button>
+  <button class="soir-badge" id="soirBadge" hidden></button>
+  <button class="icon-btn" id="btnRandom" aria-label="Histoire au hasard">🎲</button>
+</header>
+
+<nav class="mainnav" id="mainnav" aria-label="Rubriques">
+  <button data-nav="histoires">📖 Histoires</button>
+  <button data-nav="jeux">🎮 Jeux</button>
+</nav>
+
+<nav class="tabs" id="tabs" aria-label="Univers"></nav>
+
+<main id="main">
+
+  <!-- LA UNE -->
+  <section class="cover" id="viewCover">
+    <div class="cover-sheet">
+      <div class="cover-head">
+        <div class="cover-logo">KID CARTOON</div>
+        <h1>Les histoires <b>du soir</b></h1>
+        <div class="cover-meta" id="coverMeta"></div>
+        <nav class="cover-nav" id="coverNav" aria-label="Rubriques">
+          <button data-nav="histoires">📖 Histoires</button>
+          <button data-nav="jeux">🎮 Jeux</button>
+        </nav>
+      </div>
+      <div class="cover-art" id="coverArt">
+        <div class="cover-sticker" id="coverSticker"></div>
+      </div>
+      <div class="cover-foot">
+        <div class="soir" id="soirCover"></div>
+        <button class="cover-random" id="btnCoverRandom">🎲 Une histoire au hasard</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOMMAIRE : les univers -->
+  <section class="view" id="viewHome">
+    <p class="hello" id="homeHello">Choisis un univers, puis fais défiler les histoires.</p>
+    <div class="filtres">
+      <span class="filtres-titre">Par thème</span>
+      <div class="chips" id="themeChips"></div>
+    </div>
+    <div class="uni-grid" id="uniGrid"></div>
+    <p class="foot-note">Tout est dessiné sur l'appareil. Rien ne sort du téléphone.</p>
+  </section>
+
+  <!-- UNIVERS : cover flow -->
+  <section class="view" id="viewUniverse" hidden>
+    <div class="uni-head">
+      <h2 id="uniTitle"></h2>
+      <p id="uniTagline"></p>
+    </div>
+
+    <div class="cf-stage">
+      <div class="cf" id="cf" tabindex="0" role="listbox" aria-label="Histoires"></div>
+    </div>
+
+    <div class="cf-meta">
+      <div class="cf-tags" id="cfTags"></div>
+      <h3 id="cfTitle"></h3>
+      <p id="cfSubtitle"></p>
+      <button class="cta cta-lire" id="btnRead" aria-label="Lire l'histoire">
+        <span class="cta-img">▶</span><span class="cta-mot">Lire l'histoire</span>
+      </button>
+    </div>
+
+    <div class="cf-dots" id="cfDots"></div>
+  </section>
+
+  <!-- LES JEUX -->
+  <section class="view" id="viewGames" hidden>
+    <div class="uni-head">
+      <h2>🎮 Les jeux</h2>
+      <p id="gamesSub">Pour jouer tout seul, dès 3 ans</p>
+    </div>
+    <nav class="jeux-nav" id="jeuxNav" aria-label="Les jeux" hidden></nav>
+    <div class="jeux-grid" id="gamesGrid"></div>
+    <div class="jeu-stage" id="gameStage" hidden></div>
+  </section>
+</main>
+
+<!-- LECTEUR DE BD -->
+<div class="reader" id="reader" hidden>
+  <div class="reader-top">
+    <button class="rbtn" id="rClose" aria-label="Fermer">✕</button>
+    <div class="reader-title" id="rTitle"></div>
+    <button class="rbtn" id="rSpeak" aria-label="Lire à voix haute">🔊</button>
+  </div>
+  <div class="pages" id="pages"></div>
+  <div class="reader-bottom">
+    <button class="rnav" id="rPrev" aria-label="Page précédente">‹</button>
+    <div class="rdots" id="rDots"></div>
+    <button class="rnav" id="rNext" aria-label="Page suivante">›</button>
+  </div>
+</div>
+
+<script src="assets/js/art.js"></script>
+<script src="assets/js/stories.js"></script>
+<script src="assets/js/games.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* Le service worker met le site en cache : ouverture instantanée et
+   fonctionnement hors connexion. Inutile — et impossible — pour la version
+   en un seul fichier, ouverte depuis le disque. */
+if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+  addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () { });
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Aperçu des planches</title>
+<style>
+  body { margin: 0; background: #23202a; font: 13px system-ui, sans-serif; color: #ddd; }
+  h2 { margin: 18px 8px 6px; font-size: 15px; color: #ffd166; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 8px; }
+  .card { width: 392px; background: #fff; border-radius: 8px; overflow: hidden; }
+  .card svg { display: block; width: 100%; height: auto; }
+  .cap { padding: 4px 6px; color: #333; font-size: 11px; line-height: 1.35; }
+  .hint { padding: 10px; color: #999; }
+</style>
+</head>
+<body>
+<div class="hint">
+  Aperçu de toutes les planches, en planche-contact. Filtrer avec <code>?u=&lt;univers&gt;&amp;s=&lt;histoire&gt;</code>.
+</div>
+<div id="out"></div>
+<script src="../assets/js/art.js"></script>
+<script src="../assets/js/stories.js"></script>
+<script>
+var q = new URLSearchParams(location.search), U = q.get('u'), S = q.get('s');
+var out = document.getElementById('out');
+
+if (!UNIVERSES.length) {
+  out.innerHTML = '<div class="hint">Aucune histoire écrite pour l\'instant.</div>';
+}
+
+UNIVERSES.forEach(function (uni) {
+  if (U && uni.id !== U) return;
+  uni.stories.forEach(function (st) {
+    if (S && st.id !== S) return;
+    var h = document.createElement('h2');
+    h.textContent = uni.name + ' — ' + st.title + '  (' + uni.id + '/' + st.id + ')';
+    out.appendChild(h);
+    var row = document.createElement('div');
+    row.className = 'row';
+    st.pages.forEach(function (p, i) {
+      var d = document.createElement('div');
+      d.className = 'card';
+      d.innerHTML = Art.scene(p.scene) +
+        '<div class="cap">' + (i + 1) + '. ' + p.text + '</div>';
+      row.appendChild(d);
+    });
+    out.appendChild(row);
+  });
+});
+</script>
+</body>
+</html>

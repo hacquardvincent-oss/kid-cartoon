@@ -64,13 +64,22 @@ index.html            la coquille : bandeau, menus, vues, lecteur
 sw.js                 le service worker (cache et hors ligne)
 manifest.webmanifest
 assets/css/style.css  toute la mise en page, mobile d'abord
-assets/js/art.js      le moteur de dessin SVG (personnages, décors, objets)
+assets/js/art.js      le moteur de dessin SVG (silhouettes, décors, objets)
+assets/js/scene.js    NOUVEAU : la mise en scène automatique
 assets/js/perso.js    NOUVEAU : le créateur de personnages et leur stockage
 assets/js/stories.js  les canevas d'histoires (avec des rôles, pas des noms)
 assets/js/games.js    les jeux et leur cadre commun
 assets/js/app.js      navigation, couverture, lecteur, compteur du soir
 outils/               contrôle qualité des planches, aperçu, page unique
 ```
+
+### Le vocabulaire est en français
+
+Tout le vocabulaire du moteur — types d'éléments, décors, poses, humeurs,
+propriétés de scène — est **en français**. Une planche s'écrit
+`{ decor: 'jardin', heure: 'couchant', items: [{ t: 'enfant', pose: 'salue' }] }`.
+Ce choix a été fait au premier commit, pendant que le fichier d'histoires
+était vide : après trois cents planches, il aurait été trop tard.
 
 ---
 
@@ -98,9 +107,14 @@ d'une texture de grain de 64 px.
   on rogne le ciel, jamais les jambes.
 * **L'ombre au sol** sous chaque personnage : c'est elle qui le pose sur le
   décor. Sans elle il flotte.
-* **Les poses** existantes : `stand`, `wave`, `armsup`, `jump`, `run`, `sit`,
-  `point`, `hold`, `shrug`. Les **humeurs** : `happy`, `wow`, `sad`, `sleep`,
-  `fache`.
+* **Les poses** existantes : `debout`, `salue`, `brasenlair`, `saute`, `court`,
+  `assis`, `montre`, `tient`, `hausse`. Les **humeurs** : `content`, `surpris`,
+  `triste`, `dort`, `fache`. Toute silhouette doit honorer les cinq humeurs :
+  une humeur ignorée retombe silencieusement sur le sourire, et c'est
+  exactement le genre de défaut que l'œil ne voit pas.
+* **Le décor est dessiné deux fois** : une fois net, sous le dessin tremblé.
+  Sans ça, le `feDisplacementMap` va chercher des pixels hors du cadre et
+  dessine une dentelure blanche tout autour de la case.
 
 ### Direction artistique
 
@@ -150,8 +164,15 @@ technique à construire.
 **Le cadre est volontairement fermé** : un espace de création borné produit de
 meilleurs résultats qu'un espace ouvert, et reste maîtrisable côté écriture.
 
-* **Silhouettes** : quelques fabriques paramétrées (enfant, adulte, bébé,
-  animal, personnage rond). Toute silhouette ajoutée profite à tous.
+* **Silhouettes** : cinq fabriques paramétrées — `enfant`, `adulte` (la même,
+  avec la tête réduite de 14 % : c'est la proportion, pas la taille, qui fait
+  l'adulte), `bebe`, `animal` (les oreilles font l'espèce : `pointues`,
+  `rondes`, `tombantes`, `longues`), `rond` (les doudous et les amis
+  imaginaires : un gros corps, une tête soudée dessus par `U()`, des
+  oreilles). Toute silhouette ajoutée profite à tous.
+* **Il n'y a aucun personnage nommé dans `art.js`.** Le registre publie les
+  fabriques, pas des héros. Un personnage s'écrit en entier dans la scène,
+  ce qui donne au placement automatique un seul type d'objet à mesurer.
 * **Réglages** : teint, couleur et style de cheveux, couleur de vêtement,
   accessoires (lunettes, couronne, cape, chapeau, masque).
 * **Identité** : un prénom, un lien (moi, maman, papa, frère, sœur, copain,

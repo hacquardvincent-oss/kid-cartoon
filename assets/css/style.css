@@ -1,0 +1,881 @@
+/* ============================================================
+   Kid Cartoon — feuille de style (mobile d'abord)
+   Direction artistique : le magazine de lecture jeunesse.
+   Papier crème, bandeau rouge, titres ronds, texte au plomb.
+   ============================================================ */
+
+/* Fredoka — SIL Open Font License 1.1 (assets/fonts/OFL-Fredoka.txt).
+   Les titres, les bulles, le lettrage. */
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/fredoka-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Fredoka';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/fredoka-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* Literata — SIL Open Font License 1.1 (assets/fonts/OFL-Literata.txt).
+   Le texte des histoires : un vrai caractère de lecture. */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('../fonts/literata-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+:root {
+  /* l'encre et le papier */
+  --ink: #3a2a22;
+  --ink-soft: #6d5847;
+  --paper: #f6ecd9;
+  --paper-2: #efe2c9;
+  --paper-3: #e6d5b6;
+  --page: #fffaf0;
+
+  /* les couleurs du kiosque */
+  --rouge: #d8342b;
+  --rouge-fonce: #b1231d;
+  --jaune: #f7c518;
+  --bleu: #2f7fb5;
+
+  --radius: 14px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+
+  /* grain de papier, appliqué en surimpression */
+  --grain: url('../img/grain.png');
+
+  --tc1: var(--rouge);
+  --tc2: var(--jaune);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* `hidden` doit toujours l'emporter sur nos display: flex / grid */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  min-height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* le grain du papier, sur toute la page */
+.grain-layer {
+  position: fixed; inset: 0; pointer-events: none; z-index: 40;
+  background-image: var(--grain);
+  background-size: 96px 96px;
+  opacity: .32;
+  mix-blend-mode: multiply;
+}
+
+main, .topbar, .tabs, .mainnav { position: relative; z-index: 1; }
+
+/* ---------------- le bandeau du magazine ---------------- */
+.topbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: calc(var(--safe-top) + 12px) 14px 12px;
+  background: var(--rouge);
+  border-bottom: 3px solid var(--ink);
+  box-shadow: 0 3px 0 rgba(58, 42, 34, .12);
+}
+/* le logo : partout, il ramène à l'accueil */
+.logo {
+  flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0;
+  background: none; border: 0; padding: 0; cursor: pointer;
+  font-family: inherit; color: inherit; text-align: left;
+  transition: transform .12s;
+}
+.logo:active { transform: scale(.96); }
+.logo-txt {
+  display: flex; flex-direction: column; line-height: .92; min-width: 0;
+}
+.logo-txt b {
+  font-size: 21px; font-weight: 700; color: #fff6e4; letter-spacing: .5px;
+}
+.logo-txt i {
+  font-style: normal; font-size: 15px; font-weight: 600; letter-spacing: 2.6px;
+  color: var(--jaune);
+}
+
+/* ---------------- le menu principal ---------------- */
+.mainnav {
+  position: relative; z-index: 1;
+  display: flex; gap: 10px; justify-content: center;
+  padding: 12px 14px 2px;
+}
+.mainnav button {
+  flex: 0 1 auto; font-family: inherit; cursor: pointer;
+  font-size: 16px; font-weight: 600; padding: 9px 22px;
+  border: 3px solid var(--ink); border-radius: 999px;
+  background: var(--page); color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .15s;
+}
+.mainnav button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.mainnav button.is-active { background: var(--jaune); }
+
+/* le compte du soir : combien d'histoires il reste à lire */
+.soir-badge {
+  flex: 0 0 auto; height: 40px; padding: 0 13px; border-radius: 999px;
+  border: 2.5px solid var(--ink); background: var(--jaune); color: var(--ink);
+  font-family: inherit; font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 2px 0 var(--ink); margin-right: 8px;
+}
+.soir-badge b { font-size: 19px; font-weight: 700; }
+.soir-badge.fini { background: var(--page); color: var(--ink-soft); }
+.soir-badge:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+
+.soir {
+  display: flex; align-items: center; justify-content: center;
+  flex-wrap: wrap; gap: 8px; margin: 0 0 10px;
+}
+.soir-titre { font-size: 14.5px; color: var(--ink-soft); }
+.soir-titre b { color: var(--ink); font-size: 17px; }
+.soir-choix { display: flex; gap: 6px; }
+.soir-choix button {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2.5px solid var(--ink); background: var(--page); color: var(--ink);
+  font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.soir-choix button:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.soir-regle { display: flex; align-items: center; gap: 10px; }
+.soir-pm {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 2.5px solid var(--ink); background: var(--jaune); color: var(--ink);
+  font-family: inherit; font-size: 20px; font-weight: 700; line-height: 1; cursor: pointer;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.soir-pm:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.soir-pm[disabled] { opacity: .35; box-shadow: none; }
+.soir-changer {
+  font-family: inherit; cursor: pointer; background: none; border: 0; padding: 0;
+  color: var(--ink-soft); font-size: 13.5px;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+
+.icon-btn {
+  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%;
+  border: 2.5px solid var(--ink);
+  background: #fff6e4; color: var(--ink);
+  font-size: 19px; line-height: 1; cursor: pointer;
+  display: grid; place-items: center; font-family: inherit;
+  box-shadow: 0 2px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s;
+}
+.icon-btn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+#btnBack { font-size: 28px; padding-bottom: 4px; }
+
+/* ---------------- les rubriques ---------------- */
+.tabs {
+  display: flex; gap: 8px; overflow-x: auto; padding: 12px 14px 4px;
+  scrollbar-width: none;
+}
+.tabs::before, .tabs::after { content: ''; flex: 0 0 2px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab {
+  flex: 0 0 auto; border: 2.5px solid var(--ink);
+  background: var(--page); color: var(--ink);
+  border-radius: 999px; padding: 7px 15px; font-size: 14.5px; font-weight: 500;
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 2px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.tab:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.tab.is-active { background: var(--tc2, var(--jaune)); font-weight: 600; }
+
+/* ---------------- LA UNE ---------------- */
+.cover {
+  height: 100vh; height: 100svh;
+  display: flex;
+  padding: 0;
+}
+/* la une occupe tout l'écran : l'illustration prend la place qui reste */
+.cover-sheet {
+  position: relative; width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  background: var(--page);
+  overflow: hidden;
+}
+
+.cover-head {
+  flex: 0 0 auto; background: var(--rouge); color: #fff6e4;
+  padding: calc(var(--safe-top) + 12px) 16px 14px;
+  border-bottom: 4px solid var(--ink);
+  text-align: center;
+}
+.cover-logo {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-bottom: 8px; color: #fff6e4;
+  font-size: 13px; font-weight: 600; letter-spacing: 2.4px;
+}
+.cover-head h1 {
+  margin: 0; font-size: clamp(30px, 8.5vw, 44px); font-weight: 700;
+  line-height: .98; letter-spacing: -.5px; text-wrap: balance;
+}
+.cover-head h1 b {
+  color: var(--jaune); font-weight: 700;
+  -webkit-text-stroke: 1.5px var(--ink);
+  paint-order: stroke fill;
+}
+.cover-meta {
+  margin-top: 5px; font-size: 12.5px; letter-spacing: 1.6px;
+  text-transform: uppercase; color: #ffd9c9;
+}
+
+/* le dessin remplit tout l'espace disponible ; la composition change de
+   forme selon l'écran (voir COUVERTURE.large et COUVERTURE.haut) */
+.cover-art {
+  flex: 1 1 auto; min-height: 0;
+  position: relative; border-bottom: 4px solid var(--ink);
+}
+.cover-art svg { display: block; width: 100%; height: 100%; }
+.cover-art::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 96px 96px;
+  opacity: .3; mix-blend-mode: multiply;
+}
+
+/* la pastille du kiosque */
+.cover-sticker {
+  position: absolute; top: 5%; left: 16px; z-index: 3;
+  width: 84px; height: 84px; border-radius: 50%;
+  background: var(--jaune); border: 3px solid var(--ink);
+  box-shadow: 3px 3px 0 rgba(58, 42, 34, .35);
+  display: grid; place-content: center; text-align: center;
+  transform: rotate(-11deg); line-height: 1.05;
+}
+.cover-sticker b { display: block; font-size: 27px; font-weight: 700; }
+.cover-sticker span { font-size: 10.5px; font-weight: 500; }
+
+.cover-foot {
+  flex: 0 0 auto; text-align: center;
+  padding: 14px 16px calc(var(--safe-bot) + 16px);
+}
+/* le menu de rubriques, dans le bandeau : les deux seules portes d'entrée */
+.cover-nav {
+  display: flex; gap: 10px; justify-content: center; margin-top: 12px;
+}
+.cover-nav button {
+  font-family: inherit; cursor: pointer;
+  font-size: 16px; font-weight: 600; padding: 9px 22px;
+  border: 3px solid var(--ink); border-radius: 999px;
+  background: var(--page); color: var(--ink);
+  box-shadow: 0 3px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .15s;
+}
+.cover-nav button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.cover-random {
+  font-family: inherit; cursor: pointer;
+  background: none; border: 0; color: var(--ink-soft);
+  font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px;
+}
+
+/* sur un écran large, le bandeau et le pied se resserrent : chaque pixel
+   rendu à l'illustration, c'est du ciel qu'on cesse de rogner */
+@media (min-width: 720px) {
+  .cover-sticker { width: 104px; height: 104px; left: 30px; top: 5%; }
+  .cover-sticker b { font-size: 33px; }
+  .cover-head { padding: 12px 16px 10px; }
+  .cover-head h1 { font-size: clamp(34px, 3.6vw, 48px); }
+  .cover-logo { margin-bottom: 4px; font-size: 12px; }
+  .cover-meta { margin-top: 3px; font-size: 11.5px; }
+  .cover-foot { padding: 10px 16px 14px; }
+  .cover-nav { margin-top: 9px; }
+  .cover-nav button { font-size: 17px; padding: 10px 28px; }
+}
+
+/* ---------------- le sommaire ---------------- */
+.view { padding: 12px 14px 40px; }
+.hello { margin: 2px 2px 14px; color: var(--ink-soft); font-size: 15px; }
+.hello b { color: var(--ink); }
+
+/* les filtres par thème : ils traversent les univers */
+.filtres { margin: 0 0 16px; }
+.filtres-titre {
+  display: block; margin: 0 2px 7px;
+  font-size: 12px; font-weight: 600; letter-spacing: 1.6px;
+  text-transform: uppercase; color: var(--ink-soft);
+}
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.chip {
+  font-family: inherit; cursor: pointer; white-space: nowrap;
+  font-size: 13.5px; font-weight: 500; padding: 6px 13px;
+  border: 2.5px solid var(--ink); border-radius: 999px;
+  background: var(--page); color: var(--ink);
+  box-shadow: 0 2px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .12s;
+}
+.chip i { font-style: normal; opacity: .5; font-size: 12px; margin-left: 2px; }
+.chip:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.chip.is-active { background: var(--jaune); font-weight: 600; }
+.chip.is-active i { opacity: .7; }
+
+.lien-effacer {
+  font-family: inherit; cursor: pointer; margin-left: 6px;
+  background: none; border: 0; padding: 0; color: var(--ink-soft);
+  font-size: 13.5px; text-decoration: underline; text-underline-offset: 3px;
+}
+
+.uni-grid { display: grid; gap: 18px; }
+
+/* chaque univers : une couverture de magazine */
+.uni-card {
+  position: relative; display: block; width: 100%; padding: 0;
+  border: 3px solid var(--ink); border-radius: 4px; overflow: hidden; cursor: pointer;
+  background: var(--page); text-align: left; font-family: inherit; color: var(--ink);
+  box-shadow: 5px 6px 0 rgba(58, 42, 34, .22);
+  transition: transform .14s, box-shadow .14s;
+}
+.uni-card:active { transform: translate(2px, 3px); box-shadow: 2px 3px 0 rgba(58, 42, 34, .22); }
+.uni-card .band {
+  background: var(--rouge); color: #fff6e4;
+  padding: 7px 12px; display: flex; align-items: baseline; gap: 8px;
+  border-bottom: 3px solid var(--ink);
+}
+.uni-card .band h3 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: .3px; }
+.uni-card .band .num {
+  margin-left: auto; font-size: 12px; color: var(--jaune); white-space: nowrap;
+}
+.uni-card .thumb { display: block; aspect-ratio: 16 / 10; position: relative; }
+.uni-card .thumb svg { display: block; width: 100%; height: 100%; }
+.uni-card .cap {
+  padding: 9px 12px 11px; display: flex; align-items: center; gap: 10px;
+  border-top: 3px solid var(--ink); background: var(--page);
+}
+.uni-card .cap p { margin: 0; font-size: 13.5px; color: var(--ink-soft); }
+.uni-card .pill {
+  margin-left: auto; flex: 0 0 auto;
+  background: var(--jaune); border: 2px solid var(--ink); border-radius: 999px;
+  padding: 3px 10px; font-size: 12px; font-weight: 500; white-space: nowrap;
+}
+.foot-note { margin: 26px 2px 0; font-size: 12.5px; color: var(--ink-soft); opacity: .75; }
+
+/* ---------------- entête d'univers ---------------- */
+.uni-head { text-align: center; margin: 2px 0 4px; }
+.uni-head h2 { margin: 0; font-size: 25px; font-weight: 700; }
+.uni-head p { margin: 3px 0 0; font-size: 14px; color: var(--ink-soft); }
+
+/* ---------------- LE PRÉSENTOIR (cover flow) ---------------- */
+.cf-stage {
+  position: relative;
+  height: min(56vh, 330px);
+  margin: 10px -14px 0;
+  perspective: 1000px;
+  perspective-origin: 50% 44%;
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.cf {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  outline: none;
+}
+.cf-item {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: min(44vw, 194px);
+  aspect-ratio: 3 / 4;
+  margin: calc(min(44vw, 194px) * 4 / 3 / -2 * 1.04) 0 0 calc(min(44vw, 194px) / -2);
+  cursor: pointer;
+  will-change: transform;
+  transition: transform .42s cubic-bezier(.22, .68, .3, 1);
+  transform-style: preserve-3d;
+}
+.cf.is-dragging .cf-item { transition: none; }
+
+/* une couverture : bandeau rouge, illustration, titre */
+.cf-art {
+  position: relative; width: 100%; height: 100%;
+  overflow: hidden; background: var(--page);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 5px 0 rgba(58, 42, 34, .3);
+  display: flex; flex-direction: column;
+}
+.cf-art .cf-band {
+  flex: 0 0 auto; background: var(--rouge); color: var(--jaune);
+  font-size: 9.5px; font-weight: 600; letter-spacing: .4px;
+  padding: 3px 7px; display: flex; justify-content: space-between;
+  border-bottom: 2px solid var(--ink);
+}
+.cf-art svg { display: block; width: 100%; flex: 1 1 auto; min-height: 0; }
+.cf-art .cf-name {
+  flex: 0 0 auto; border-top: 2px solid var(--ink); background: var(--page);
+  padding: 4px 7px 5px; font-size: 10.5px; font-weight: 600; line-height: 1.15;
+  text-align: center;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cf-art::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background-image: var(--grain); background-size: 96px 96px;
+  opacity: .3; mix-blend-mode: multiply;
+}
+.cf-item .cf-shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background: rgba(58, 42, 34, .42); opacity: 0;
+  transition: opacity .42s;
+}
+
+/* le reflet du présentoir */
+.cf-reflect {
+  position: absolute; top: 100%; left: 0; width: 100%; height: 46%;
+  overflow: hidden;
+  transform: scaleY(-1); transform-origin: top;
+  margin-top: 3px; opacity: .2; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 85%);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, .9), transparent 85%);
+}
+.cf-reflect .cf-band, .cf-reflect .cf-name { display: none; }
+.cf-reflect svg { display: block; width: 100%; height: 210%; }
+
+.cf-badge {
+  position: absolute; top: 24px; right: 6px; z-index: 2;
+  background: var(--jaune); color: var(--ink);
+  font-size: 10.5px; font-weight: 600; padding: 2px 7px;
+  border: 2px solid var(--ink); border-radius: 999px;
+}
+
+/* ---------------- l'ourlet de l'histoire ---------------- */
+.cf-meta { text-align: center; margin-top: 10px; }
+.cf-tags { display: flex; gap: 6px; justify-content: center; min-height: 22px; flex-wrap: wrap; }
+.cf-tags span {
+  font-size: 11.5px; padding: 2px 9px; border-radius: 999px;
+  background: var(--paper-2); border: 2px solid var(--paper-3);
+  color: var(--ink-soft);
+}
+.cf-meta h3 {
+  margin: 9px 0 0; font-size: 22px; font-weight: 700; line-height: 1.15;
+  min-height: 26px; text-wrap: balance;
+}
+.cf-meta p { margin: 3px 0 0; font-size: 14px; color: var(--ink-soft); min-height: 18px; }
+
+.cta {
+  margin-top: 14px; cursor: pointer; font-family: inherit;
+  padding: 12px 30px; border-radius: 999px; font-size: 17px; font-weight: 600;
+  color: #fff6e4; background: var(--rouge);
+  border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s;
+}
+.cta:active { transform: translateY(4px); box-shadow: 0 0 0 var(--ink); }
+
+/* le grand bouton de lecture : une flèche qu'on reconnaît sans savoir lire */
+.cta-lire {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 9px 26px 9px 10px;
+}
+.cta-img {
+  width: 44px; height: 44px; border-radius: 50%; flex: 0 0 auto;
+  background: #fff6e4; color: var(--rouge);
+  display: grid; place-content: center;
+  font-size: 21px; line-height: 1; padding-left: 3px;
+  border: 3px solid var(--ink);
+}
+.cta-mot { font-size: 18px; }
+
+/* boutons illustrés : la grande image d'abord, le mot en petit dessous */
+.bi {
+  font-family: inherit; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  width: 88px; padding: 9px 4px 7px;
+  border: 3px solid var(--ink); border-radius: 18px;
+  background: var(--page); color: var(--ink); box-shadow: 0 4px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s;
+}
+.bi:active { transform: translateY(4px); box-shadow: 0 0 0 var(--ink); }
+.bi.primary { background: var(--jaune); }
+.bi-img { font-size: 30px; line-height: 1.05; }
+.bi-mot { font-size: 12.5px; font-weight: 600; letter-spacing: .2px; }
+
+
+.cf-dots { display: flex; gap: 7px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.cf-dots i {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--paper-3);
+  border: 1.5px solid var(--ink); opacity: .45; transition: .2s;
+}
+.cf-dots i.on { background: var(--rouge); opacity: 1; transform: scale(1.2); }
+
+/* ---------------- LES JEUX ---------------- */
+.jeux-grid { display: grid; gap: 14px; margin-top: 12px; }
+.jeu-carte {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  padding: 10px 14px 10px 10px; cursor: pointer; font-family: inherit;
+  background: var(--page); color: var(--ink); text-align: left;
+  border: 3px solid var(--ink); border-radius: 4px;
+  box-shadow: 5px 6px 0 rgba(58, 42, 34, .22);
+  transition: transform .14s, box-shadow .14s;
+}
+.jeu-carte:active { transform: translate(2px, 3px); box-shadow: 2px 3px 0 rgba(58, 42, 34, .22); }
+.jeu-vignette {
+  flex: 0 0 auto; width: 76px; height: 76px; border-radius: 50%;
+  background: var(--paper-2); border: 2.5px solid var(--ink); overflow: hidden;
+}
+.jeu-vignette svg { display: block; width: 100%; height: 100%; }
+.jeu-texte h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.jeu-texte p { margin: 2px 0 0; font-size: 13.5px; color: var(--ink-soft); }
+
+/* le plateau */
+.jeu-stage { margin-top: 10px; }
+.jeu-etoiles { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; }
+.jeu-etoiles .etoile {
+  width: 22px; height: 22px; background: var(--paper-3);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  transition: background .25s, transform .25s;
+}
+.jeu-etoiles .etoile.on { background: var(--jaune); transform: scale(1.15); }
+.jeu-consigne {
+  margin: 0 0 12px; text-align: center; font-size: 17px; font-weight: 500;
+  min-height: 22px; text-wrap: balance;
+}
+.jeu-zone { position: relative; }
+
+/* relier */
+.relier { position: relative; display: flex; justify-content: space-between; gap: 12px; }
+.relier-col { display: flex; flex-direction: column; gap: 12px; flex: 0 0 42%; }
+.relier-traits { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.relier-traits line { stroke: var(--rouge); stroke-width: 5; stroke-linecap: round; }
+.carte {
+  width: 100%; aspect-ratio: 1 / 1; padding: 4px; cursor: pointer;
+  background: var(--page); border: 3px solid var(--ink); border-radius: 4px;
+  box-shadow: 3px 4px 0 rgba(58, 42, 34, .2);
+  transition: transform .12s, box-shadow .12s, background .2s, border-color .2s;
+}
+.carte svg { display: block; width: 100%; height: 100%; }
+.carte.choisie { background: var(--jaune); transform: translateY(-2px); }
+.carte.ok { background: #dff0d2; border-color: #4f8a3d; box-shadow: 3px 4px 0 rgba(79, 138, 61, .35); }
+.carte.secoue { animation: secoue .4s; }
+@keyframes secoue {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-7px); }
+  75% { transform: translateX(7px); }
+}
+
+/* compter */
+.jeu-tableau { border: 3px solid var(--ink); overflow: hidden; background: var(--page); }
+.jeu-tableau svg { display: block; width: 100%; height: auto; }
+.chiffres { display: flex; gap: 12px; justify-content: center; margin-top: 16px; }
+.chiffre {
+  width: 74px; height: 74px; font-family: inherit; cursor: pointer;
+  font-size: 34px; font-weight: 700; color: var(--ink);
+  background: var(--page); border: 3px solid var(--ink); border-radius: 16px;
+  box-shadow: 0 5px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s, background .2s;
+}
+.chiffre:active { transform: translateY(5px); box-shadow: 0 0 0 var(--ink); }
+.chiffre.ok { background: #a8dc8c; }
+.chiffre.secoue { animation: secoue .4s; }
+
+/* écrire */
+/* un jeu à l'écran entier : plus de bandeau, plus de titre, rien à faire
+   défiler — c'est la seule façon de tenir deux cases sur un téléphone */
+.jeu-plein {
+  position: fixed; inset: 0; z-index: 60; margin: 0; max-width: none;
+  background: var(--paper); background-image: var(--grain);
+  background-size: 96px 96px;
+  display: flex; flex-direction: column;
+  padding: calc(var(--safe-top) + 10px) 8px calc(var(--safe-bot) + 8px);
+}
+.jeu-plein .jeu-etoiles { flex: 0 0 auto; margin: 0 44px 6px 0; }
+.jeu-plein .jeu-consigne { flex: 0 0 auto; margin: 0 0 6px; font-size: 16px; }
+.jeu-plein .jeu-zone { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.jeu-plein .diff { flex: 1 1 auto; min-height: 0; margin: 0; grid-template-rows: 1fr 1fr; }
+.jeu-plein .diff-vue { aspect-ratio: auto; height: 100%; min-height: 0; }
+.jeu-plein .diff-score { flex: 0 0 auto; margin: 6px 0 0; }
+.jeu-fermer {
+  position: absolute; top: calc(var(--safe-top) + 8px); right: 10px; z-index: 3;
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 2.5px solid var(--ink); background: var(--page); color: var(--ink);
+  font-family: inherit; font-size: 17px; line-height: 1; cursor: pointer;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.jeu-fermer:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+
+/* les 6 différences : deux fois la même case, à un détail près */
+/* sur un téléphone, la case va d'un bord à l'autre : chaque pixel compte
+   pour viser un détail du doigt */
+.diff { display: grid; gap: 8px; margin: 0 -14px; }
+.diff-vue {
+  position: relative; aspect-ratio: 800 / 560; overflow: hidden;
+  border: 3px solid var(--ink); background: var(--page);
+  box-shadow: 3px 4px 0 rgba(58, 42, 34, .2);
+  cursor: pointer; touch-action: manipulation;
+}
+.diff-vue svg { display: block; width: 100%; height: 100%; }
+.diff-vue.rate { animation: secousse .26s; }
+@keyframes secousse {
+  25% { transform: translateX(-5px); } 75% { transform: translateX(5px); }
+}
+.diff-marque {
+  fill: none; stroke: #e0453c; stroke-width: 9; stroke-linecap: round;
+  stroke-dasharray: 26 16; opacity: .95;
+}
+.diff-score { text-align: center; margin: 10px 0 0; font-size: 17px; color: var(--ink-soft); }
+.diff-score b { font-size: 24px; color: var(--rouge); }
+
+@media (min-width: 760px) {
+  .diff { grid-template-columns: 1fr 1fr; margin: 0; gap: 12px; }
+  .jeu-plein .diff { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+}
+
+/* le rang de jeux, pour passer de l'un à l'autre */
+.jeux-nav {
+  display: flex; gap: 7px; overflow-x: auto; padding: 0 0 10px;
+  margin: 0 -14px 10px; padding-inline: 14px;
+  scrollbar-width: none;
+}
+.jeux-nav::-webkit-scrollbar { display: none; }
+.jeux-nav .chip { flex: 0 0 auto; }
+
+/* choisir un prénom, choisir une lettre */
+.choix-grille {
+  display: grid; gap: 8px; margin: 0 0 14px;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+}
+.choix-b {
+  font-family: inherit; cursor: pointer;
+  font-size: 16px; font-weight: 600; letter-spacing: .5px;
+  padding: 12px 6px; color: var(--ink);
+  background: var(--page); border: 3px solid var(--ink); border-radius: 14px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.choix-b:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.choix-hasard {
+  display: block; width: 100%; font-family: inherit; cursor: pointer;
+  font-size: 16px; font-weight: 600; padding: 11px 16px;
+  background: var(--jaune); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink);
+}
+.choix-hasard:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+
+/* reconnaître une lettre parmi trois */
+.lettres-choix { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.lettre-b {
+  cursor: pointer; aspect-ratio: 1 / 1; padding: 8px;
+  background: var(--page); color: var(--ink);
+  border: 3px solid var(--ink); border-radius: 16px; box-shadow: 0 4px 0 var(--ink);
+}
+.lettre-b svg { display: block; width: 100%; height: 100%; }
+.lettre-b:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.lettre-b.juste { background: #cfe8bd; color: #3d6b2c; }
+.lettre-b.faux { animation: secousse .3s; }
+
+/* le prénom en cours d'écriture, lettre par lettre */
+.prenom {
+  display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;
+  margin: 0 0 12px;
+}
+.prenom span {
+  min-width: 34px; padding: 4px 6px; text-align: center;
+  font-size: 21px; font-weight: 700; color: var(--ink-soft);
+  background: var(--paper-2); border: 2.5px solid var(--paper-3);
+  border-radius: 10px;
+}
+.prenom span.ici { color: var(--ink); background: var(--jaune); border-color: var(--ink); }
+.prenom span.fait { color: #4f8a3d; background: #e3f0d8; border-color: #a9cf94; }
+
+.trace {
+  width: min(100%, 340px); margin: 0 auto; aspect-ratio: 1 / 1;
+  background: var(--page); border: 3px solid var(--ink);
+  box-shadow: 4px 5px 0 rgba(58, 42, 34, .2);
+  touch-action: none;
+}
+.trace svg { display: block; width: 100%; height: 100%; }
+.trace .guide { stroke: var(--paper-3); stroke-linecap: round; }
+.trace .guide.fait { stroke: #cfe4c0; }
+.trace .pointille { stroke: var(--ink-soft); stroke-dasharray: 3 4; opacity: .5; }
+.trace .depart { fill: #4f8a3d; }
+.trace .encre { fill: none; stroke: var(--rouge); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+.trace .ecrit { stroke: #4f8a3d; stroke-linecap: round; }
+
+/* félicitations */
+.jeu-bravo {
+  position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+  background: rgba(246, 236, 217, .92); z-index: 5; animation: pop .3s ease;
+}
+.jeu-bravo b { font-size: 30px; color: var(--rouge); }
+.bravo-etoile { font-size: 62px; animation: tourne .8s ease; }
+@keyframes pop { from { opacity: 0; transform: scale(.9); } }
+@keyframes tourne { from { transform: rotate(-25deg) scale(.4); } }
+
+.jeu-fin { text-align: center; padding: 20px 10px; }
+.fin-etoiles { font-size: 46px; letter-spacing: 4px; }
+.jeu-fin h3 { margin: 8px 0 4px; font-size: 28px; color: var(--rouge); }
+.jeu-fin p { margin: 0 0 18px; color: var(--ink-soft); font-family: 'Literata', Georgia, serif; }
+.jeu-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.jeu-actions button {
+  font-family: inherit; cursor: pointer; border-radius: 999px; font-size: 15px;
+  padding: 11px 20px; border: 2.5px solid var(--ink);
+  background: var(--page); color: var(--ink); box-shadow: 0 3px 0 var(--ink);
+}
+.jeu-actions button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.jeu-actions button.primary { background: var(--jaune); font-weight: 600; }
+
+@media (min-width: 720px) {
+  .jeux-grid { grid-template-columns: 1fr 1fr; }
+  .jeu-stage { max-width: 640px; margin: 10px auto 0; }
+}
+
+/* ---------------- LE LIVRET ---------------- */
+.reader {
+  position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column;
+  background-color: var(--paper);
+}
+.reader::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  background-image: var(--grain); background-size: 96px 96px;
+  opacity: .3; mix-blend-mode: multiply;
+}
+
+.reader-top {
+  position: relative; z-index: 4;
+  display: flex; align-items: center; gap: 10px;
+  padding: calc(var(--safe-top) + 10px) 12px 10px;
+  background: var(--rouge); border-bottom: 3px solid var(--ink);
+}
+.reader-title {
+  flex: 1; text-align: center; font-size: 16px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: #fff6e4;
+}
+.rbtn {
+  width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto;
+  border: 2.5px solid var(--ink); background: #fff6e4;
+  color: var(--ink); font-size: 16px; cursor: pointer; font-family: inherit;
+  display: grid; place-items: center; box-shadow: 0 2px 0 var(--ink);
+}
+.rbtn:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ink); }
+.rbtn.on { background: var(--jaune); }
+
+.pages {
+  position: relative; z-index: 2;
+  flex: 1; display: flex; overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
+  animation: fadeUp .28s ease both;
+}
+.pages::-webkit-scrollbar { display: none; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.page {
+  flex: 0 0 100%; scroll-snap-align: center; scroll-snap-stop: always;
+  padding: 14px 14px 10px; display: flex; flex-direction: column; gap: 14px;
+  justify-content: center;
+  overflow-y: auto; overscroll-behavior-y: contain;
+}
+
+/* l'illustration, posée sur la page comme une vignette imprimée */
+.panel {
+  flex: 0 0 auto; overflow: hidden;
+  border: 3px solid var(--ink);
+  background: var(--page);
+  box-shadow: 4px 5px 0 rgba(58, 42, 34, .2);
+}
+.panel svg { display: block; width: 100%; height: auto; }
+
+/* le texte de l'histoire */
+.ptext {
+  margin: 0; padding: 0 4px;
+  color: var(--ink); font-size: 18.5px; line-height: 1.62;
+  font-family: 'Literata', Georgia, 'Times New Roman', serif;
+  font-weight: 400; text-wrap: pretty;
+}
+.ptext::first-letter {
+  float: left; font-size: 3.1em; line-height: .82; padding: 4px 8px 0 0;
+  color: var(--rouge); font-family: 'Fredoka', sans-serif; font-weight: 700;
+}
+.pnum {
+  align-self: center; font-size: 12px; color: var(--ink-soft); opacity: .7;
+  padding-bottom: 2px;
+}
+
+/* la dernière page */
+.page-end { justify-content: center; align-items: center; text-align: center; gap: 16px; }
+.end-badge { font-size: 54px; }
+.page-end h4 {
+  margin: 0; font-size: 30px; font-weight: 700; color: var(--rouge);
+}
+.page-end p {
+  margin: 0; color: var(--ink-soft); font-size: 16px; max-width: 32ch;
+  font-family: 'Literata', Georgia, serif;
+}
+.end-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.end-actions button {
+  font-family: inherit; cursor: pointer; border-radius: 999px; font-size: 15px;
+  padding: 10px 18px; border: 2.5px solid var(--ink);
+  background: var(--page); color: var(--ink); box-shadow: 0 3px 0 var(--ink);
+}
+.end-actions button:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.end-actions button.primary { background: var(--jaune); font-weight: 600; }
+
+.reader-bottom {
+  position: relative; z-index: 4;
+  display: flex; align-items: center; gap: 12px; justify-content: center;
+  padding: 8px 14px calc(var(--safe-bot) + 12px);
+  background: var(--paper-2); border-top: 3px solid var(--ink);
+}
+.rnav {
+  width: 44px; height: 44px; border-radius: 50%; flex: 0 0 auto;
+  border: 2.5px solid var(--ink); background: var(--page);
+  color: var(--ink); font-size: 25px; cursor: pointer; font-family: inherit;
+  display: grid; place-items: center; padding-bottom: 4px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+.rnav:active { transform: translateY(3px); box-shadow: 0 0 0 var(--ink); }
+.rnav:disabled { opacity: .3; box-shadow: none; transform: none; }
+.rdots { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; max-width: 58vw; }
+.rdots i {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--paper-3);
+  border: 1.5px solid var(--ink); opacity: .45; transition: .2s;
+}
+.rdots i.on { background: var(--rouge); opacity: 1; transform: scale(1.25); }
+
+/* ---------------- écrans larges ---------------- */
+@media (min-width: 720px) {
+  .logo-txt b { font-size: 26px; }
+  .logo-txt i { font-size: 17px; }
+  .mainnav button { font-size: 17px; padding: 10px 28px; }
+  .view { padding: 16px 24px 50px; max-width: 1100px; margin: 0 auto; }
+  .uni-grid { grid-template-columns: 1fr 1fr; gap: 22px; }
+  .cf-stage { height: min(52vh, 390px); margin: 12px 0 0; }
+  .cf-item { width: 210px; margin: calc(210px * 4 / 3 / -2 * 1.04) 0 0 -105px; }
+  .cf-meta h3 { font-size: 26px; }
+  .page { padding: 18px 24px 12px; align-items: center; }
+  .panel, .ptext { width: min(100%, 720px); }
+  .ptext { font-size: 20px; }
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .page { flex-direction: row; align-items: center; gap: 24px; }
+  .panel { flex: 1 1 56%; width: auto; }
+  .ptext { flex: 1 1 44%; width: auto; font-size: 20px; }
+  .pnum { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cf-item { transition: none; }
+  .pages { animation: none; }
+}
