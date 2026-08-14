@@ -317,10 +317,15 @@ suivant.
 ## Décisions prises
 
 * **La garde-robe : deux réglages, pas un.** `haut` (tee-shirt, pull, robe) et
-  `bas` (pantalon, short, jupe), découplés. C'est plus riche pour le créateur
-  de personnages qu'un simple bas, mais ça a un coût de vérification : chaque
-  pose est à revoir sur la **combinaison** des deux, pas sur chacun séparément.
-  À faire avant le créateur de personnages — un papa en robe, ça ne passe pas.
+  `bas` (pantalon, short, jupe), découplés. **Fait.** Un vêtement posé sur un
+  membre, c'est le *même* tracé redessiné dont on ne montre que le début
+  (`pathLength="100"` + `stroke-dasharray`) : une manche courte, c'est 34, un
+  pantalon, c'est 86. L'astuce vaut pour toutes les poses d'un coup — la
+  découper à la main aurait voulu dire un vêtement par pose, et neuf
+  occasions de se tromper. Le bloc de hanche est dessiné **avec le buste**,
+  pas avec les jambes : c'est le buste qui suit la pose quand on s'assoit.
+  On habille le bas d'abord, le haut par-dessus : une robe sur un pantalon
+  se dessine toute seule.
 * **Six archétypes.** C'est ce chiffre, et pas le nombre de personnages, qui
   fixe le volume d'écriture : six tempéraments × une vingtaine de canevas.
 * **Le parent peut relire et modifier une histoire avant le coucher.**

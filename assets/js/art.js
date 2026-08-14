@@ -75,6 +75,8 @@
 
   var COIFFURES = ['couettes', 'tresse', 'deuxtresses', 'longs', 'boucles',
     'carre', 'queue', 'queuehaute'];
+  var LISTE_HAUTS = ['robe', 'teeshirt', 'pull'];
+  var LISTE_BAS = ['aucun', 'pantalon', 'short', 'jupe'];
 
   /* ---------- la fabrique enfant : silhouette, coiffure, garde-robe ---------- */
   function cheveuxDe(style, cheveux) {
@@ -208,70 +210,108 @@
     return s;
   }
 
-  function brasEnfant(pose, teint) {
-    if (pose === 'salue') {
-      return limb('M -26,-124 C -48,-116 -60,-104 -62,-90', teint, 12) +
-        limb('M 26,-126 C 56,-136 80,-158 86,-182', teint, 12) +
-        hand(-64, -86, teint, 10) + hand(90, -188, teint, 11);
-    }
-    if (pose === 'brasenlair' || pose === 'saute') {
-      return limb('M -26,-124 C -56,-136 -80,-158 -86,-182', teint, 12) +
-        limb('M 26,-124 C 56,-136 80,-158 86,-182', teint, 12) +
-        hand(-90, -188, teint, 10) + hand(90, -188, teint, 10);
-    }
-    if (pose === 'montre') {
-      return limb('M -26,-124 C -48,-114 -58,-100 -60,-88', teint, 12) +
-        limb('M 26,-126 C 54,-130 76,-138 96,-146', teint, 12) +
-        hand(-62, -84, teint, 10) + hand(100, -148, teint, 10);
-    }
-    if (pose === 'tient') {
-      return limb('M -26,-124 C -46,-120 -58,-112 -58,-100', teint, 12) +
-        limb('M 26,-124 C 46,-120 58,-112 58,-100', teint, 12) +
-        hand(-60, -96, teint, 10) + hand(60, -96, teint, 10);
-    }
-    if (pose === 'magie') {
-      return limb('M -26,-124 C -52,-132 -72,-146 -80,-164', teint, 12) +
-        limb('M 26,-126 C 52,-134 74,-150 82,-168', teint, 12) +
-        hand(-84, -170, teint, 10) + hand(86, -174, teint, 10);
-    }
-    if (pose === 'nage') {
-      return limb('M -26,-124 C -50,-134 -66,-132 -78,-126', teint, 12) +
-        limb('M 26,-124 C 50,-134 66,-132 78,-126', teint, 12) +
-        hand(-82, -124, teint, 10) + hand(82, -124, teint, 10);
-    }
-    if (pose === 'hausse') {
-      return limb('M -26,-126 C -50,-132 -66,-126 -72,-116', teint, 12) +
-        limb('M 26,-126 C 50,-132 66,-126 72,-116', teint, 12) +
-        hand(-76, -114, teint, 10) + hand(76, -114, teint, 10);
-    }
-    return limb('M -26,-124 C -48,-116 -60,-104 -62,-90', teint, 12) +
-      limb('M 26,-124 C 48,-116 60,-104 62,-90', teint, 12) +
-      hand(-64, -86, teint, 10) + hand(64, -86, teint, 10);
+  /* ------------------------------------------------------------
+     LA GARDE-ROBE
+
+     Un vêtement posé sur un membre, c'est le MÊME tracé redessiné, dont on
+     ne montre que le début : `pathLength="100"` normalise la longueur, donc
+     `part` est un pourcentage. Une manche courte, c'est 34 ; un pantalon,
+     c'est 86. Et surtout : ça marche dans n'importe quelle pose, sans avoir
+     à couper une courbe de Bézier à la main — ce qui aurait voulu dire un
+     vêtement par pose, et neuf occasions de se tromper.
+
+     Le bout coupé garde son bouchon rond d'encre : c'est l'ourlet.
+     ------------------------------------------------------------ */
+  function membreHabille(d, couleur, w, part) {
+    var coupe = ' pathLength="100" stroke-dasharray="' + part + ' 100"';
+    return '<path d="' + d + '" fill="none" stroke="' + INK + '" stroke-width="' + (w + 7) +
+      '" stroke-linecap="round" stroke-linejoin="round"' + coupe + '/>' +
+      '<path d="' + d + '" fill="none" stroke="' + couleur + '" stroke-width="' + w +
+      '" stroke-linecap="round" stroke-linejoin="round"' + coupe + '/>';
   }
 
-  function jambesEnfant(pose, teint) {
-    if (pose === 'saute') {
-      return limb('M -12,-58 C -24,-40 -38,-32 -48,-28', teint, 14) +
-        limb('M 12,-58 C 24,-40 38,-34 48,-30', teint, 14) +
-        '<ellipse cx="-52" cy="-26" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4" transform="rotate(-25 -52 -26)"/>' +
-        '<ellipse cx="52" cy="-28" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4" transform="rotate(25 52 -28)"/>';
+  function chaussure(x, y, rot) {
+    return '<ellipse cx="' + x + '" cy="' + y + '" rx="15" ry="9" fill="' + CHAUSSURE +
+      '" stroke="' + INK + '" stroke-width="4"' +
+      (rot ? ' transform="rotate(' + rot + ' ' + x + ' ' + y + ')"' : '') + '/>';
+  }
+
+  /* Les tracés des membres, sortis des fonctions : le vêtement a besoin de
+     les redessiner, et deux copies d'un même tracé finissent toujours par
+     diverger. */
+  var BRAS_ENFANT = {
+    debout: { g: 'M -26,-124 C -48,-116 -60,-104 -62,-90', d: 'M 26,-124 C 48,-116 60,-104 62,-90',
+      mg: [-64, -86, 10], md: [64, -86, 10] },
+    salue: { g: 'M -26,-124 C -48,-116 -60,-104 -62,-90', d: 'M 26,-126 C 56,-136 80,-158 86,-182',
+      mg: [-64, -86, 10], md: [90, -188, 11] },
+    brasenlair: { g: 'M -26,-124 C -56,-136 -80,-158 -86,-182', d: 'M 26,-124 C 56,-136 80,-158 86,-182',
+      mg: [-90, -188, 10], md: [90, -188, 10] },
+    montre: { g: 'M -26,-124 C -48,-114 -58,-100 -60,-88', d: 'M 26,-126 C 54,-130 76,-138 96,-146',
+      mg: [-62, -84, 10], md: [100, -148, 10] },
+    tient: { g: 'M -26,-124 C -46,-120 -58,-112 -58,-100', d: 'M 26,-124 C 46,-120 58,-112 58,-100',
+      mg: [-60, -96, 10], md: [60, -96, 10] },
+    magie: { g: 'M -26,-124 C -52,-132 -72,-146 -80,-164', d: 'M 26,-126 C 52,-134 74,-150 82,-168',
+      mg: [-84, -170, 10], md: [86, -174, 10] },
+    nage: { g: 'M -26,-124 C -50,-134 -66,-132 -78,-126', d: 'M 26,-124 C 50,-134 66,-132 78,-126',
+      mg: [-82, -124, 10], md: [82, -124, 10] },
+    hausse: { g: 'M -26,-126 C -50,-132 -66,-126 -72,-116', d: 'M 26,-126 C 50,-132 66,-126 72,-116',
+      mg: [-76, -114, 10], md: [76, -114, 10] }
+  };
+  BRAS_ENFANT.saute = BRAS_ENFANT.brasenlair;
+
+  var JAMBES_ENFANT = {
+    debout: { g: 'M -13,-58 L -13,-16', d: 'M 13,-58 L 13,-16',
+      pieds: chaussure(-15, -11) + chaussure(15, -11), hanche: [0, -58] },
+    saute: { g: 'M -12,-58 C -24,-40 -38,-32 -48,-28', d: 'M 12,-58 C 24,-40 38,-34 48,-30',
+      pieds: chaussure(-52, -26, -25) + chaussure(52, -28, 25), hanche: [0, -58] },
+    court: { g: 'M -10,-58 C -22,-42 -32,-24 -34,-12', d: 'M 10,-58 C 20,-44 24,-28 22,-12',
+      pieds: chaussure(-38, -9) + chaussure(26, -9), hanche: [0, -58] },
+    assis: { g: 'M -6,-24 C 20,-24 40,-22 46,-6 C 49,4 50,16 50,26',
+      d: 'M 6,-16 C 32,-16 54,-14 60,2 C 63,12 64,22 64,32',
+      pieds: chaussure(54, 30) + chaussure(68, 36), hanche: [-2, -22] },
+    nage: { pieds: '', hanche: [0, -58] }
+  };
+
+  /* Le haut : trois coupes, qui se distinguent à l'ourlet et à la manche.
+     `part` est la longueur de manche. */
+  var HAUTS = {
+    robe: { d: 'M -28,-138 C -34,-112 -46,-80 -50,-56 L 50,-56 C 46,-80 34,-112 28,-138 Z',
+      ourlet: -64, bordX: 47, manche: 34 },
+    teeshirt: { d: 'M -28,-138 C -32,-118 -35,-98 -36,-80 L 36,-80 C 35,-98 32,-118 28,-138 Z',
+      ourlet: -88, bordX: 33, manche: 34 },
+    pull: { d: 'M -29,-140 C -34,-118 -38,-98 -39,-78 L 39,-78 C 38,-98 34,-118 29,-140 Z',
+      ourlet: -86, bordX: 36, manche: 86 }
+  };
+
+  /* Le bas : la hanche est un morceau plein posé au sommet des jambes, et
+     les jambes sont rhabillées sur une partie de leur longueur. La jupe,
+     elle, n'habille pas les jambes du tout. */
+  var BAS = {
+    pantalon: { hanche: 'M -22,-84 L 22,-84 L 21,-50 L -21,-50 Z', part: 84 },
+    short: { hanche: 'M -23,-84 L 23,-84 L 24,-46 L -24,-46 Z', part: 38 },
+    jupe: { hanche: 'M -25,-84 L 25,-84 L 46,-44 L -46,-44 Z', part: 0 }
+  };
+
+  function brasEnfant(pose, teint, manche) {
+    var b = BRAS_ENFANT[pose] || BRAS_ENFANT.debout;
+    var s = limb(b.g, teint, 12) + limb(b.d, teint, 12);
+    if (manche && manche.part) {
+      s += membreHabille(b.g, manche.couleur, 15, manche.part) +
+        membreHabille(b.d, manche.couleur, 15, manche.part);
     }
-    if (pose === 'court') {
-      return limb('M -10,-58 C -22,-42 -32,-24 -34,-12', teint, 14) +
-        limb('M 10,-58 C 20,-44 24,-28 22,-12', teint, 14) +
-        '<ellipse cx="-38" cy="-9" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-        '<ellipse cx="26" cy="-9" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
+    return s + hand(b.mg[0], b.mg[1], teint, b.mg[2]) + hand(b.md[0], b.md[1], teint, b.md[2]);
+  }
+
+  function jambesEnfant(pose, teint, bas) {
+    var j = JAMBES_ENFANT[pose] || JAMBES_ENFANT.debout;
+    if (!j.g) return '';
+    var s = limb(j.g, teint, 14) + limb(j.d, teint, 14);
+    if (bas && BAS[bas.coupe] && BAS[bas.coupe].part) {
+      var part = BAS[bas.coupe].part;
+      s += membreHabille(j.g, bas.couleur, 17, part) +
+        membreHabille(j.d, bas.couleur, 17, part);
     }
-    if (pose === 'assis') {
-      return limb('M -6,-24 C 20,-24 40,-22 46,-6 C 49,4 50,16 50,26', teint, 14) +
-        limb('M 6,-16 C 32,-16 54,-14 60,2 C 63,12 64,22 64,32', teint, 14) +
-        '<ellipse cx="54" cy="30" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-        '<ellipse cx="68" cy="36" rx="14" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
-    }
-    if (pose === 'nage') return '';
-    return limb('M -13,-58 L -13,-16', teint, 14) + limb('M 13,-58 L 13,-16', teint, 14) +
-      '<ellipse cx="-15" cy="-11" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>' +
-      '<ellipse cx="15" cy="-11" rx="15" ry="9" fill="' + CHAUSSURE + '" stroke="' + INK + '" stroke-width="4"/>';
+    return s + j.pieds;
   }
 
   /* La même fabrique sert à l'enfant et à l'adulte : ce qui les sépare, ce
@@ -283,14 +323,22 @@
     var teint = o.teint || '#f6cba6';
     var cheveux = o.cheveux || '#7b4a2d';
     var vetement = o.vetement || '#3ec9c9';
+    var H = HAUTS[o.haut] || HAUTS.robe;
+    /* on habille le bas d'abord, le haut par-dessus : une robe sur un
+       pantalon, c'est une tenue d'enfant, et l'ordre suffit à la dessiner */
     var pose = o.pose || 'debout';
+    var bas = (BAS[o.bas] && pose !== 'nage')
+      ? { coupe: o.bas, couleur: o.couleurBas || shade(vetement, -0.34) } : null;
     var assis = pose === 'assis';
     var k = o.adulte ? 0.86 : 1;
     var s = '';
-    if (pose !== 'nage') s += jambesEnfant(pose, teint);
-    var t = brasEnfant(pose, teint);
-    t += U(['<path d="M -28,-138 C -34,-112 -46,-80 -50,-56 L 50,-56 C 46,-80 34,-112 28,-138 Z" fill="%F%" %S%/>'], vetement, 9);
-    if (o.bord) t += line('M -47,-68 L 47,-68', o.bord, 5);
+    if (pose !== 'nage') s += jambesEnfant(pose, teint, bas);
+    var t = brasEnfant(pose, teint, { couleur: vetement, part: H.manche });
+    if (bas && BAS[bas.coupe]) {
+      t += U(['<path d="' + BAS[bas.coupe].hanche + '" fill="%F%" %S%/>'], bas.couleur, 8);
+    }
+    t += U(['<path d="' + H.d + '" fill="%F%" %S%/>'], vetement, 9);
+    if (o.bord) t += line('M ' + (-H.bordX) + ',' + H.ourlet + ' L ' + H.bordX + ',' + H.ourlet, o.bord, 5);
     t += line('M -20,-136 q 20,16 40,0', shade(vetement, -0.25), 4);
     var tete = 'translate(0,-130)' + (k !== 1 ? ' scale(' + k + ')' : '');
     t += gTete(tete, teteEnfant({
@@ -1731,6 +1779,8 @@
     objets: P,
     decors: BG,
     coiffures: COIFFURES,
+    hauts: LISTE_HAUTS,
+    bas: LISTE_BAS,
     poses: POSES,
     humeurs: HUMEURS,
     INK: INK,

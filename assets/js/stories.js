@@ -59,7 +59,7 @@ var FIGURANTS = {
   },
   petit: {
     t: 'enfant', teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre',
-    vetement: '#e8746b', bord: '#ffd9c9'
+    vetement: '#e8746b', haut: 'teeshirt', bas: 'short', couleurBas: '#4a6ea8'
   },
   doudou: {
     t: 'rond', couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true

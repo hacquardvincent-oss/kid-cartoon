@@ -53,7 +53,7 @@ function merge(a, b) {
 
 var manquants = [];
 
-function section(titre, cles, champ) {
+function section(titre, cles, champ, seulement) {
   var h = document.createElement('h2');
   h.textContent = titre;
   document.body.appendChild(h);
@@ -61,7 +61,7 @@ function section(titre, cles, champ) {
   g.className = 'grille';
   document.body.appendChild(g);
 
-  Object.keys(MODELES).forEach(function (nom) {
+  (seulement || Object.keys(MODELES)).forEach(function (nom) {
     var vus = {};
     cles.forEach(function (v) {
       var reglage = {};
@@ -84,6 +84,61 @@ function section(titre, cles, champ) {
    placement automatique nécessaire */
 section('Les poses', Art.poses, 'pose');
 section('Les humeurs', Art.humeurs, 'humeur');
+section('Les coiffures', Art.coiffures, 'coiffure', ['enfant', 'adulte']);
+
+/* ------------------------------------------------------------
+   LA GARDE-ROBE
+
+   On ne vérifie pas le haut d'un côté et le bas de l'autre : c'est la
+   COMBINAISON qui se voit. Un pull s'arrête plus bas qu'un tee-shirt, et
+   un short qui commence trop bas laisse un trou de peau. On croise donc
+   les deux — puis on rejoue tout l'habillage dans chaque pose, parce
+   qu'un vêtement suit le membre et qu'un membre bouge.
+   ------------------------------------------------------------ */
+function garderobe() {
+  var h = document.createElement('h2');
+  h.textContent = 'La garde-robe : haut × bas';
+  document.body.appendChild(h);
+  var g = document.createElement('div');
+  g.className = 'grille';
+  document.body.appendChild(g);
+  var vus = {};
+  Art.hauts.forEach(function (haut) {
+    Art.bas.forEach(function (bas) {
+      var it = merge(MODELES.enfant, { haut: haut, bas: bas, couleurBas: '#4a6ea8' });
+      var svg = Art.vignette(merge(it, { ds: .46, dy: 200 }));
+      var d = document.createElement('div');
+      d.className = 'vign';
+      var doublon = vus[svg];
+      if (doublon) { d.className += ' doublon'; manquants.push('garde-robe : ' + haut + ' + ' + bas + ' = ' + doublon); }
+      vus[svg] = haut + ' + ' + bas;
+      d.innerHTML = svg + '<div class="nom">' + haut + '<br>' + bas + '</div>';
+      g.appendChild(d);
+    });
+  });
+}
+garderobe();
+
+/* la même tenue dans toutes les poses : c'est là que les vêtements
+   décrochent des membres */
+function tenueEnPoses(titre, reglage) {
+  var h = document.createElement('h2');
+  h.textContent = titre;
+  document.body.appendChild(h);
+  var g = document.createElement('div');
+  g.className = 'grille';
+  document.body.appendChild(g);
+  Art.poses.forEach(function (pose) {
+    var it = merge(merge(MODELES.enfant, reglage), { pose: pose, ds: .46, dy: 200 });
+    var d = document.createElement('div');
+    d.className = 'vign';
+    d.innerHTML = Art.vignette(it) + '<div class="nom">' + pose + '</div>';
+    g.appendChild(d);
+  });
+}
+tenueEnPoses('Tee-shirt + pantalon, pose par pose', { haut: 'teeshirt', bas: 'pantalon', couleurBas: '#4a6ea8' });
+tenueEnPoses('Pull + short, pose par pose', { haut: 'pull', bas: 'short', couleurBas: '#c9702f' });
+tenueEnPoses('Robe + jupe, pose par pose', { haut: 'robe', bas: 'jupe', couleurBas: '#c94f7a' });
 
 document.getElementById('note').innerHTML = manquants.length
   ? '<b>' + manquants.length + ' réglage(s) sans effet :</b><br>' + manquants.join('<br>')
