@@ -35,7 +35,8 @@ const content = body
 
 /* --- JavaScript --- */
 /* même ordre que dans index.html : app.js a besoin de Jeux au démarrage */
-const js = ['assets/js/art.js', 'assets/js/stories.js', 'assets/js/games.js', 'assets/js/app.js']
+const js = ['assets/js/art.js', 'assets/js/scene.js', 'assets/js/stories.js',
+  'assets/js/games.js', 'assets/js/app.js']
   .map(read).join('\n');
 
 /* --- assemblage ---

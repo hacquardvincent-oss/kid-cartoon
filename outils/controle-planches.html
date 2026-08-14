@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Contrôle des planches</title>
+<style>
+  body { margin: 0; background: #23202a; font: 13px system-ui, sans-serif; color: #ddd; }
+  header { padding: 14px 16px; border-bottom: 1px solid #3a3644; }
+  h1 { margin: 0 0 4px; font-size: 16px; color: #ffd166; }
+  header p { margin: 0; color: #999; max-width: 78ch; line-height: 1.5; }
+  .bilan { margin: 10px 16px 0; padding: 10px 12px; border-radius: 8px;
+    background: #2c2836; font-size: 13px; line-height: 1.6; }
+  .bilan.ok { color: #8fe0a8; }
+  .bilan.ko { color: #ffab8f; }
+  h2 { margin: 20px 16px 8px; font-size: 14px; color: #ffd166; font-weight: 600; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 16px; }
+  .card { width: 420px; background: #fff; border-radius: 8px; overflow: hidden;
+    position: relative; }
+  .card svg { display: block; width: 100%; height: auto; }
+  .cap { padding: 5px 8px; color: #333; font-size: 11px; line-height: 1.4; }
+  .cap b { color: #a01d16; }
+  .cap .bien { color: #1d7a3a; }
+  /* les boîtes mesurées, superposées à la planche */
+  .calque { position: absolute; inset: 0; pointer-events: none; }
+  .calque rect { fill: none; stroke-width: 2; }
+  .calque .corps { stroke: #1d7a3a; }
+  .calque .tete { stroke: #d8342b; stroke-dasharray: 6 4; }
+  .calque .lettre { stroke: #1560c4; }
+  label { color: #bbb; margin-left: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Contrôle des planches</h1>
+  <p>
+    Chaque planche est dessinée dans le navigateur, puis <b>mesurée</b> :
+    boîte réelle de chaque élément, boîte de chaque visage, boîte de chaque
+    bulle. On signale ce que l'œil laisse passer — un bras hors cadre, une
+    bulle sur un visage, deux corps qui se marchent dessus, une queue de
+    bulle trop longue.
+    <label><input type="checkbox" id="boites"> montrer les boîtes mesurées</label>
+  </p>
+</header>
+
+<div class="bilan" id="bilan">Mesure en cours…</div>
+<div id="out"></div>
+
+<script src="../assets/js/art.js"></script>
+<script src="../assets/js/scene.js"></script>
+<script src="../assets/js/stories.js"></script>
+<script>
+/* ------------------------------------------------------------
+   Un petit vivier de personnages de tailles très différentes : c'est là
+   que le placement automatique se casse, pas sur trois enfants de même
+   gabarit. Le bébé fait 60 % de la taille d'un enfant, l'adulte 126 %,
+   et le personnage rond est large là où l'enfant est fin.
+   ------------------------------------------------------------ */
+var VIVIER = {
+  bebe:    { t: 'bebe', teint: '#f6cba6', cheveux: '#f7dc8a', vetement: '#8ec9f0' },
+  petite:  { t: 'enfant', teint: '#f2c49a', cheveux: '#4a2f22', coiffure: 'boucles', vetement: '#3ec9c9', bord: '#fff1a8' },
+  garcon:  { t: 'enfant', teint: '#f7dcc4', cheveux: '#3c2a20', coiffure: 'carre', vetement: '#e8746b' },
+  grande:  { t: 'enfant', teint: '#c9885c', cheveux: '#2f2118', coiffure: 'deuxtresses', vetement: '#a98cf0' },
+  grand:   { t: 'adulte', teint: '#e8b98f', cheveux: '#3c2a20', coiffure: 'carre', vetement: '#4f8a7a' },
+  mamie:   { t: 'adulte', teint: '#f0d7bd', cheveux: '#e4e2dc', coiffure: 'carre', vetement: '#a98cf0', lunettes: true },
+  doudou:  { t: 'rond', couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true },
+  monstre: { t: 'rond', couleur: '#7ac6a8', forme: 'carre', oreilles: 'longues' },
+  chien:   { t: 'animal', poil: '#c9a06a', clair: '#f7e7cf', oreilles: 'tombantes' },
+  chat:    { t: 'animal', poil: '#8a8f9a', clair: '#e4e7ec', oreilles: 'pointues', queue: 'aucune' }
+};
+function p(cle, extra) {
+  var o = {}, k, base = VIVIER[cle];
+  for (k in base) if (base.hasOwnProperty(k)) o[k] = base[k];
+  for (k in extra) if (extra.hasOwnProperty(k)) o[k] = extra[k];
+  return o;
+}
+
+/* ------------------------------------------------------------
+   LES CAS D'ESSAI
+   Un casting de 1, 2, 3 et 4 personnages de tailles très différentes,
+   plus les cas qui font mal : le lettrage, les poses qui débordent, un
+   personnage assis, et une rangée de six.
+   ------------------------------------------------------------ */
+var CAS = [
+  { titre: '1 personnage', d: { decor: 'jardin', casting: [p('petite', { pose: 'salue' })] } },
+
+  { titre: '1 personnage qui parle', d: {
+      decor: 'jardin', casting: [p('doudou', { pose: 'brasenlair' })],
+      bulles: [{ qui: 0, t: 'Je suis tout seul sur cette planche.' }] } },
+
+  { titre: '2 : un bébé et un adulte', d: {
+      decor: 'chambre', casting: [p('bebe', { pose: 'assis' }), p('grand', { pose: 'montre' })] } },
+
+  { titre: '2 qui parlent tous les deux', d: {
+      decor: 'plage', casting: [p('grande', { pose: 'salue' }), p('chien', { pose: 'debout' })],
+      bulles: [{ qui: 0, t: 'Tu viens ?' }, { qui: 1, t: 'J\'arrive, attends-moi !' }] } },
+
+  { titre: '3 de tailles très différentes', d: {
+      decor: 'colline',
+      casting: [p('bebe', { pose: 'debout' }), p('mamie', { pose: 'tient' }), p('monstre', { pose: 'brasenlair' })] } },
+
+  { titre: '3 dont un assis, avec bulle et bruitage', d: {
+      decor: 'campement', heure: 'couchant',
+      casting: [p('garcon', { pose: 'montre' }), p('doudou', { pose: 'assis' }), p('grand', { pose: 'salue' })],
+      bulles: [{ qui: 0, t: 'Regarde le feu !' }],
+      bruits: [{ qui: 2, t: 'CRAC !' }] } },
+
+  { titre: '4 personnages', d: {
+      decor: 'foret',
+      casting: [p('petite', { pose: 'court' }), p('chat', { pose: 'debout' }),
+                p('monstre', { pose: 'hausse' }), p('grand', { pose: 'tient' })] } },
+
+  { titre: '4 avec deux qui parlent', d: {
+      decor: 'ruisseau',
+      casting: [p('mamie', { pose: 'montre' }), p('bebe', { pose: 'brasenlair' }),
+                p('grande', { pose: 'salue' }), p('chien', { pose: 'assis' })],
+      bulles: [{ qui: 0, t: 'Ne mouille pas tes chaussures.' },
+               { qui: 2, t: 'Trop tard.' }] } },
+
+  { titre: '6 : la rangée impossible', d: {
+      decor: 'village',
+      casting: [p('bebe'), p('petite', { pose: 'salue' }), p('garcon', { pose: 'court' }),
+                p('doudou'), p('chien'), p('grand', { pose: 'brasenlair' })] } },
+
+  /* le témoin : une planche placée à la main, avec de vrais défauts. Si
+     l'outil ne les trouve pas, c'est l'outil qui est cassé. */
+  { titre: '⚠ témoin : planche fautive placée à la main', brute: {
+      decor: 'jardin',
+      items: [
+        p('petite', { x: 300, y: 520, s: 1.1, pose: 'salue' }),
+        p('grand', { x: 380, y: 520, s: 1.2, pose: 'montre' }),
+        p('doudou', { x: 770, y: 520, s: 1 })
+      ],
+      bulles: [{ t: 'Je couvre un visage.', x: 250, y: 240, tx: 700, ty: 500 }]
+    } }
+];
+
+/* ------------------------------------------------------------ */
+var out = document.getElementById('out');
+var total = 0, planches = 0;
+
+CAS.forEach(function (cas) {
+  var scene = cas.brute || Scene.composer(cas.d);
+  var defauts = Scene.controler(scene);
+  total += defauts.length;
+  planches++;
+
+  var h = document.createElement('h2');
+  h.textContent = cas.titre;
+  out.appendChild(h);
+
+  var row = document.createElement('div');
+  row.className = 'row';
+  var card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = Art.scene(scene, {}) +
+    '<div class="cap">' + (defauts.length
+      ? defauts.map(function (d) { return '<b>✗ ' + d.dit + '</b>'; }).join('<br>')
+      : '<span class="bien">✓ rien à signaler</span>') + '</div>';
+  card.appendChild(calque(scene));
+  row.appendChild(card);
+  out.appendChild(row);
+});
+
+document.getElementById('bilan').className = 'bilan ' + (total ? 'ko' : 'ok');
+document.getElementById('bilan').innerHTML =
+  planches + ' planches mesurées — <b>' + total + '</b> défaut' + (total > 1 ? 's' : '') +
+  '. (La dernière planche est un témoin : elle DOIT être fautive.)';
+
+/* le calque de mesure : on ne le montre que si on le demande */
+function calque(scene) {
+  var d = document.createElement('div');
+  d.className = 'calque';
+  d.style.display = 'none';
+  var svg = '<svg viewBox="0 0 800 560" style="width:100%;height:100%">';
+  (scene.items || []).forEach(function (it) {
+    if (!Art.silhouettes[it.t]) return;
+    var b = Scene.boite(it);
+    svg += rect(b, 'corps') + rect(b.tete, 'tete');
+  });
+  (scene.bulles || []).forEach(function (bu) {
+    var m = Art.mesurerBulle(bu);
+    svg += rect({ g: bu.x, d: bu.x + m.w, h: bu.y, b: bu.y + m.h }, 'lettre');
+  });
+  d.innerHTML = svg + '</svg>';
+  return d;
+}
+function rect(b, cls) {
+  return '<rect class="' + cls + '" x="' + b.g + '" y="' + b.h +
+    '" width="' + (b.d - b.g) + '" height="' + (b.b - b.h) + '"/>';
+}
+document.getElementById('boites').onchange = function () {
+  var v = this.checked ? 'block' : 'none';
+  Array.prototype.forEach.call(document.querySelectorAll('.calque'), function (c) {
+    c.style.display = v;
+  });
+};
+</script>
+</body>
+</html>

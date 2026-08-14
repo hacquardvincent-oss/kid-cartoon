@@ -51,6 +51,13 @@
 
   function g(tf, inner) { return '<g transform="' + tf + '">' + inner + '</g>'; }
 
+  /* La tête est marquée dans le dessin. C'est ce qui permet à la mise en scène
+     de placer une bulle « à côté du visage » sans le deviner : elle mesure la
+     vraie boîte de la tête dans le navigateur. */
+  function gTete(tf, inner) {
+    return '<g data-tete="1" transform="' + tf + '">' + inner + '</g>';
+  }
+
   /* ============================================================
      PERSONNAGES
      Repère local : les pieds sont en (0,0), le personnage
@@ -286,7 +293,7 @@
     if (o.bord) t += line('M -47,-68 L 47,-68', o.bord, 5);
     t += line('M -20,-136 q 20,16 40,0', shade(vetement, -0.25), 4);
     var tete = 'translate(0,-130)' + (k !== 1 ? ' scale(' + k + ')' : '');
-    t += g(tete, teteEnfant({
+    t += gTete(tete, teteEnfant({
       teint: teint, cheveux: cheveux, coiffure: o.coiffure, humeur: o.humeur,
       couronne: o.couronne, noeuds: o.noeuds, barrette: o.barrette, lunettes: o.lunettes
     }));
@@ -338,6 +345,19 @@
         limb('M 8,-14 C 30,-14 46,-10 50,2', teint, 15) +
         '<ellipse cx="42" cy="-4" rx="12" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4"/>' +
         '<ellipse cx="56" cy="4" rx="12" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4"/>';
+    } else if (pose === 'saute') {
+      /* un bébé qui saute décolle à peine : deux pieds à dix unités du sol,
+         et c'est déjà un exploit */
+      s += limb('M -12,-46 C -20,-36 -28,-32 -34,-30', teint, 16) +
+        limb('M 12,-46 C 20,-36 28,-34 34,-32', teint, 16) +
+        '<ellipse cx="-38" cy="-29" rx="13" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4" transform="rotate(-22 -38 -29)"/>' +
+        '<ellipse cx="38" cy="-31" rx="13" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4" transform="rotate(22 38 -31)"/>';
+    } else if (pose === 'court') {
+      /* la course d'un petit qui apprend : les jambes partent devant */
+      s += limb('M -10,-42 C -18,-32 -24,-20 -26,-12', teint, 16) +
+        limb('M 10,-42 C 16,-32 18,-22 17,-12', teint, 16) +
+        '<ellipse cx="-30" cy="-9" rx="13" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4"/>' +
+        '<ellipse cx="20" cy="-9" rx="13" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4"/>';
     } else {
       s += limb('M -12,-42 L -13,-14', teint, 16) + limb('M 12,-42 L 13,-14', teint, 16) +
         '<ellipse cx="-15" cy="-10" rx="13" ry="8" fill="' + teint + '" stroke="' + INK + '" stroke-width="4"/>' +
@@ -345,7 +365,7 @@
     }
 
     var t = '';
-    if (pose === 'brasenlair' || pose === 'porte') {
+    if (pose === 'brasenlair' || pose === 'porte' || pose === 'saute') {
       t += limb('M -22,-92 C -42,-104 -54,-122 -56,-138', teint, 12) +
         limb('M 22,-92 C 42,-104 54,-122 56,-138', teint, 12) +
         hand(-58, -142, teint, 10) + hand(58, -142, teint, 10);
@@ -361,6 +381,20 @@
       t += limb('M -22,-90 C -40,-76 -50,-52 -52,-30', teint, 12) +
         limb('M 22,-90 C 40,-76 50,-52 52,-30', teint, 12) +
         hand(-54, -22, teint, 10) + hand(54, -22, teint, 10);
+    } else if (pose === 'montre') {
+      /* montrer du doigt : le premier geste avant les mots, et le seul
+         qui compte vraiment dans une histoire */
+      t += limb('M -22,-92 C -38,-84 -46,-74 -48,-64', teint, 12) +
+        limb('M 22,-94 C 42,-98 60,-102 76,-106', teint, 12) +
+        hand(-50, -60, teint, 10) + hand(80, -108, teint, 10);
+    } else if (pose === 'hausse') {
+      t += limb('M -22,-94 C -40,-100 -52,-96 -56,-88', teint, 12) +
+        limb('M 22,-94 C 40,-100 52,-96 56,-88', teint, 12) +
+        hand(-58, -85, teint, 10) + hand(58, -85, teint, 10);
+    } else if (pose === 'court') {
+      t += limb('M -22,-92 C -40,-96 -50,-88 -52,-78', teint, 12) +
+        limb('M 22,-92 C 40,-96 50,-88 52,-78', teint, 12) +
+        hand(-54, -74, teint, 10) + hand(54, -74, teint, 10);
     } else {
       t += limb('M -22,-92 C -38,-84 -46,-74 -48,-64', teint, 12) +
         limb('M 22,-92 C 38,-84 46,-74 48,-64', teint, 12) +
@@ -370,7 +404,7 @@
     /* la grenouillère */
     t += U(['<path d="M -26,-104 C -33,-80 -35,-56 -31,-38 L 31,-38 C 35,-56 33,-80 26,-104 Z" fill="%F%" %S%/>'], vetement, 9);
     if (o.bord) t += line('M -33,-52 L 33,-52', o.bord, 5);
-    t += g('translate(0,-100)', teteBebe({ teint: teint, cheveux: cheveux, humeur: o.humeur }));
+    t += gTete('translate(0,-100)', teteBebe({ teint: teint, cheveux: cheveux, humeur: o.humeur }));
     if (o.chapeau) t += g('translate(0,-100) scale(.8)', chapeauSoleil(o.chapeau));
     return s + (assis ? g('translate(-4,' + (pose === 'quatrepattes' ? 22 : 34) + ')', t) : t);
   }
@@ -522,7 +556,7 @@
         '<circle cx="26" cy="-120" r="6" fill="' + shade(poil, -0.2) + '"/>' +
         '<circle cx="-30" cy="-68" r="5" fill="' + shade(poil, -0.2) + '"/>';
     }
-    t += g('translate(0,-136)', teteAnimal({
+    t += gTete('translate(0,-136)', teteAnimal({
       poil: poil, clair: clair, masque: o.masque, oreilles: o.oreilles, humeur: o.humeur
     }));
     if (o.chapeau) t += g('translate(0,-136)', chapeauSoleil(o.chapeau));
@@ -1490,6 +1524,17 @@
     return lines;
   }
 
+  /* combien de place prend cette bulle ? Le calcul est le même que celui du
+     tracé — c'est volontaire : deux formules qui divergent, et la bulle se
+     pose à côté de là où elle est dessinée. */
+  function mesurerBulle(b) {
+    var fs = b.fs || 25;
+    var w = b.w || 250;
+    var max = Math.max(6, Math.floor((w - 34) / (fs * 0.52)));
+    var lignes = wrapText(b.t, max);
+    return { w: w, h: lignes.length * (fs + 7) + 26, lignes: lignes.length };
+  }
+
   function bubble(b) {
     var fs = b.fs || 25;
     var w = b.w || 250;
@@ -1594,7 +1639,7 @@
      RENDU DE SCÈNE
      ============================================================ */
 
-  function renderItems(list) {
+  function renderItems(list, rang) {
     var out = '', i;
     if (!list) return '';
     for (i = 0; i < list.length; i++) {
@@ -1605,7 +1650,8 @@
       var sx = it.flip ? -sc : sc;
       var rot = it.rot ? ' rotate(' + it.rot + ')' : '';
       var op = it.op !== undefined ? ' opacity="' + it.op + '"' : '';
-      out += '<g transform="translate(' + (it.x || 0) + ',' + (it.y || 0) + ') scale(' + sx + ',' + sc + ')' + rot + '"' + op + '>' +
+      out += '<g data-t="' + it.t + '" data-rang="' + (rang || 'items') + '"' +
+        ' transform="translate(' + (it.x || 0) + ',' + (it.y || 0) + ') scale(' + sx + ',' + sc + ')' + rot + '"' + op + '>' +
         ombre(it.t, it.pose) + fn(it) + '</g>';
     }
     return out;
@@ -1619,20 +1665,22 @@
     /* le dessin : décor, personnages, objets */
     var art = bgFn(s);
     if (s.flocons) art += flocons(s.flocons === true ? 26 : s.flocons);
-    art += renderItems(s.fond);
-    art += renderItems(s.items);
-    art += renderItems(s.avant);
+    art += renderItems(s.fond, 'fond');
+    art += renderItems(s.items, 'items');
+    art += renderItems(s.avant, 'avant');
 
     /* le lettrage : bruitages et bulles, laissés nets */
     var letters = '';
     if (s.bruits) {
       for (var i = 0; i < s.bruits.length; i++) {
         var f = s.bruits[i];
-        letters += g('translate(' + f.x + ',' + f.y + ')', sfx(f));
+        letters += '<g data-lettrage="bruit" transform="translate(' + f.x + ',' + f.y + ')">' + sfx(f) + '</g>';
       }
     }
     if (s.bulles && !opts.sansBulles) {
-      for (var j = 0; j < s.bulles.length; j++) letters += bubble(s.bulles[j]);
+      for (var j = 0; j < s.bulles.length; j++) {
+        letters += '<g data-lettrage="bulle">' + bubble(s.bulles[j]) + '</g>';
+      }
     }
 
     /* le trait tremble légèrement, comme une encre posée à la main */
@@ -1677,6 +1725,7 @@
   global.Art = {
     scene: sceneSVG,
     vignette: vignetteSVG,
+    mesurerBulle: mesurerBulle,
     /* le catalogue, pour les outils et le créateur de personnages */
     silhouettes: SILHOUETTES,
     objets: P,

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les silhouettes, pose par pose</title>
+<style>
+  body { margin: 0; background: #23202a; font: 13px system-ui, sans-serif; color: #ddd; }
+  header { padding: 14px 16px; border-bottom: 1px solid #3a3644; }
+  h1 { margin: 0 0 4px; font-size: 16px; color: #ffd166; }
+  header p { margin: 0; color: #999; max-width: 78ch; line-height: 1.5; }
+  h2 { margin: 22px 16px 6px; font-size: 14px; color: #ffd166; }
+  .grille { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+  .vign { width: 132px; background: #fdf7ea; border-radius: 8px; overflow: hidden; }
+  .vign svg { display: block; width: 100%; height: auto; background: #fdf7ea; }
+  .vign .nom { padding: 3px 6px; font-size: 11px; color: #4a3a2e; text-align: center; }
+  .vign .nom b { color: #a01d16; }
+  .doublon { outline: 2px solid #d8342b; }
+  .note { margin: 8px 16px 0; color: #ffab8f; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Les silhouettes, pose par pose</h1>
+  <p>
+    Toutes les silhouettes, dans toutes les poses et toutes les humeurs.
+    C'est la planche de référence du créateur de personnages — et le
+    filet : une pose ou une humeur qu'une fabrique ne sait pas dessiner
+    retombe silencieusement sur la pose debout ou sur le sourire.
+    <b>Les cases cerclées de rouge sont des dessins identiques à un autre :
+    la fabrique ignore ce réglage.</b>
+  </p>
+</header>
+<div class="note" id="note"></div>
+
+<script src="../assets/js/art.js"></script>
+<script src="../assets/js/scene.js"></script>
+<script>
+var MODELES = {
+  enfant: { t: 'enfant', teint: '#f2c49a', cheveux: '#4a2f22', coiffure: 'boucles', vetement: '#3ec9c9', bord: '#fff1a8' },
+  adulte: { t: 'adulte', teint: '#e8b98f', cheveux: '#3c2a20', coiffure: 'queue', vetement: '#4f8a7a' },
+  bebe:   { t: 'bebe', teint: '#f6cba6', cheveux: '#f7dc8a', vetement: '#8ec9f0' },
+  animal: { t: 'animal', poil: '#c9a06a', clair: '#f7e7cf', oreilles: 'tombantes' },
+  rond:   { t: 'rond', couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true }
+};
+
+function merge(a, b) {
+  var o = {}, k;
+  for (k in a) if (a.hasOwnProperty(k)) o[k] = a[k];
+  for (k in b) if (b.hasOwnProperty(k)) o[k] = b[k];
+  return o;
+}
+
+var manquants = [];
+
+function section(titre, cles, champ) {
+  var h = document.createElement('h2');
+  h.textContent = titre;
+  document.body.appendChild(h);
+  var g = document.createElement('div');
+  g.className = 'grille';
+  document.body.appendChild(g);
+
+  Object.keys(MODELES).forEach(function (nom) {
+    var vus = {};
+    cles.forEach(function (v) {
+      var reglage = {};
+      reglage[champ] = v;
+      var it = merge(MODELES[nom], reglage);
+      var svg = Art.vignette(merge(it, { ds: .46, dy: 200 }));
+      var d = document.createElement('div');
+      d.className = 'vign';
+      var doublon = vus[svg];
+      if (doublon) { d.className += ' doublon'; manquants.push(nom + ' : ' + champ + ' « ' + v + ' » = « ' + doublon + ' »'); }
+      vus[svg] = v;
+      d.innerHTML = svg + '<div class="nom">' + nom + '<br>' +
+        (doublon ? '<b>' + v + '</b>' : v) + '</div>';
+      g.appendChild(d);
+    });
+  });
+}
+
+/* la coiffure change la largeur du personnage : c'est ce qui rend le
+   placement automatique nécessaire */
+section('Les poses', Art.poses, 'pose');
+section('Les humeurs', Art.humeurs, 'humeur');
+
+document.getElementById('note').innerHTML = manquants.length
+  ? '<b>' + manquants.length + ' réglage(s) sans effet :</b><br>' + manquants.join('<br>')
+  : '✓ chaque silhouette dessine bien chaque pose et chaque humeur.';
+</script>
+</body>
+</html>

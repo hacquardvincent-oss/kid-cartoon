@@ -17,6 +17,7 @@ var FICHIERS = [
   './manifest.webmanifest',
   './assets/css/style.css',
   './assets/js/art.js',
+  './assets/js/scene.js',
   './assets/js/stories.js',
   './assets/js/games.js',
   './assets/js/app.js',

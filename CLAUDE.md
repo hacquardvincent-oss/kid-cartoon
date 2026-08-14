@@ -70,7 +70,10 @@ assets/js/perso.js    NOUVEAU : le créateur de personnages et leur stockage
 assets/js/stories.js  les canevas d'histoires (avec des rôles, pas des noms)
 assets/js/games.js    les jeux et leur cadre commun
 assets/js/app.js      navigation, couverture, lecteur, compteur du soir
-outils/               contrôle qualité des planches, aperçu, page unique
+outils/controle-planches.html   le contrôle qualité + le banc d'essai du placement
+outils/silhouettes.html         chaque silhouette dans chaque pose et chaque humeur
+outils/apercu-histoire.html     une histoire entière en planche-contact
+outils/construire-page-unique.js  le site en un seul fichier
 ```
 
 ### Le vocabulaire est en français
@@ -149,13 +152,55 @@ Ce qu'on a appris et qui doit être encodé dans le placement automatique :
 * un bruitage au-dessus d'une tête, c'est la convention de la BD ; un bruitage
   **sur** un visage, c'est un défaut.
 
-**Nouveauté de ce projet :** les personnages étant inventés par l'utilisateur,
-leurs largeurs sont inconnues à l'écriture. Le placement ne peut plus être
-écrit à la main dans les histoires — il doit devenir une **fonction de mise en
-scène** qui mesure les personnages du casting, les espace sur la ligne de sol,
-ajuste les échelles et place les bulles à l'écart des visages. L'outil de
-contrôle existant devient donc le metteur en scène. C'est la première brique
-technique à construire.
+### Le placement automatique — `assets/js/scene.js`
+
+C'est fait, et c'est la brique dont tout le reste dépend. Une histoire n'écrit
+plus de coordonnées : elle donne un casting et dit qui parle.
+
+```js
+Scene.composer({
+  decor: 'campement', heure: 'couchant',
+  casting: [ perso, perso, perso ],        // réglages complets + pose
+  bulles: [ { qui: 0, t: 'Regarde le feu !' } ],
+  bruits: [ { qui: 2, t: 'CRAC !' } ]
+})
+```
+
+**On mesure, on ne devine pas.** Chaque personnage est dessiné seul dans un SVG
+hors écran et le navigateur donne sa boîte réelle, traits d'encre compris.
+Chaque silhouette marque sa tête (`data-tete`), donc on a aussi la boîte du
+visage : c'est ce qui permet de poser une bulle *à côté* d'un visage. Les
+mesures sont mises en cache par signature de réglages.
+
+Ce que le placement a appris, et qu'il ne faut pas défaire :
+
+* **On place par les bords, jamais par les centres.** Une pose `salue` tend un
+  bras de 40 unités d'un seul côté. Deux personnages « espacés de 200 » se
+  touchent quand même. La règle des 190 unités entre centres reste, par-dessus.
+* **On vise haut en hauteur, et c'est la largeur qui fait redescendre.**
+  Choisir l'échelle d'après le nombre de personnages donne des planches à
+  moitié vides. On fait remplir la hauteur au plus grand, puis on serre
+  jusqu'à ce que la rangée tienne — d'abord l'air entre les corps, ensuite
+  l'échelle de tout le monde, en reposant à chaque tour.
+* **Les tailles relatives sont dans `TAILLES`.** Sans elles, l'adulte et
+  l'enfant sortent de la même fabrique et font la même hauteur.
+* **Un personnage assis se remonte de ce que la mesure dit**, pas d'une
+  constante de 14 unités.
+* **Chaque décor a sa ligne de sol** (`SOLS`). Dans le décor « ruisseau »,
+  l'eau est au premier plan : un personnage posé à 526 a les pieds dedans.
+
+### Le contrôle
+
+`Scene.controler(scene)` mesure la planche **réellement dessinée** — pas le
+modèle qui l'a produite — et signale : hors cadre, lettrage sur un visage,
+corps qui se chevauchent, queue de bulle trop longue. Il attrape donc aussi
+les planches écrites à la main.
+
+`outils/controle-planches.html` porte une dernière planche **volontairement
+fautive** : si l'outil n'y trouve pas ses cinq défauts, c'est l'outil qui est
+cassé. `outils/silhouettes.html` compare les dessins deux à deux et signale
+une pose ou une humeur qu'une fabrique ignore — c'est comme ça qu'on a
+découvert que le bébé ne savait ni courir, ni sauter, ni montrer du doigt.
 
 ---
 
@@ -253,9 +298,10 @@ Les jeux qui se transposent presque sans travail :
 
 ## Ordre de construction
 
-1. Poser la base propre : coquille, moteur de dessin sans aucun réglage sous
-   licence, jeux, PWA, outils de contrôle.
-2. **Le placement automatique des personnages** — tout le reste en dépend.
+1. ~~Poser la base propre : coquille, moteur de dessin sans aucun réglage sous
+   licence, jeux, PWA, outils de contrôle.~~ **Fait.**
+2. ~~**Le placement automatique des personnages** — tout le reste en dépend.~~
+   **Fait** (`assets/js/scene.js`).
 3. Le créateur de personnages, version minimale : trois silhouettes, les
    couleurs, six archétypes.
 4. **Le gros du travail** : écrire une vingtaine de canevas d'histoires en
@@ -265,6 +311,17 @@ Les jeux qui se transposent presque sans travail :
 Le point 4 est le cœur du produit et le seul vrai risque. La technique suivra ;
 c'est la qualité d'écriture qui fera qu'un parent rouvre l'application le soir
 suivant.
+
+---
+
+## Ce qui manque encore, et qu'on sait déjà
+
+* **La garde-robe.** La fabrique `enfant` ne dessine qu'une tunique. Un papa,
+  un grand frère ou un copain en robe, ça ne passe pas. Il faut au minimum un
+  bas (`pantalon`, `short`, `jupe`) avant d'écrire des histoires de famille.
+* **Les jeux tiennent un casting d'attente** (`CASTING` dans `games.js`) et
+  une liste de prénoms d'attente. Le jour où la famille existe, ce sont ces
+  deux listes qu'on remplace — et rien d'autre.
 
 ---
 
