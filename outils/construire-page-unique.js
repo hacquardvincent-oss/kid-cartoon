@@ -31,6 +31,10 @@ const html = read('index.html');
 const body = html.slice(html.indexOf('<body>') + 6, html.indexOf('</body>'));
 const content = body
   .replace(/<script src="[^"]*"><\/script>\s*/g, '')
+  /* le service worker n'a rien à faire ici : un fichier ouvert depuis le
+     disque n'a pas d'origine, et l'enregistrement échoue bruyamment en
+     console. La version en un seul fichier est déjà « hors ligne ». */
+  .replace(/<script>[\s\S]*?serviceWorker[\s\S]*?<\/script>\s*/g, '')
   .trim();
 
 /* --- JavaScript --- */
