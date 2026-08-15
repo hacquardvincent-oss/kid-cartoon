@@ -47,6 +47,9 @@
     { prenom: 'Sami', genre: 'il', archetype: 'timide', silhouette: 'enfant',
       reglages: { teint: '#e8b98f', cheveux: '#6b4a33', coiffure: 'carre',
         vetement: '#7ab648', haut: 'teeshirt', bas: 'pantalon', couleurBas: '#7a4a2c' } },
+    { prenom: 'Momo', genre: 'il', archetype: 'grognon', silhouette: 'enfant',
+      reglages: { teint: '#a4683f', cheveux: '#2f2118', coiffure: 'carre',
+        vetement: '#5aa9e8', haut: 'pull', bas: 'pantalon', couleurBas: '#2f2118' } },
     { prenom: 'Bidou', genre: 'il', archetype: 'farceur', silhouette: 'rond',
       reglages: { couleur: '#f0a24a', forme: 'poire', oreilles: 'rondes', museau: true } },
     { prenom: 'Maman', genre: 'elle', archetype: 'rangetout', silhouette: 'adulte', lien: 'maman',
@@ -78,28 +81,57 @@
     return moi.length ? moi.concat(liste) : liste;
   }
 
+  /* L'archétype décide, mais pas tout seul : un rôle qui dit `enfant: true`
+     et qui atterrit sur un adulte donne « Papa refuse de mettre son pull ».
+     C'est drôle une fois, et faux les autres. On croise donc les deux avant
+     de retomber sur l'archétype seul. */
+  function classe(p, role) {
+    if (role.adulte) return p.silhouette === 'adulte';
+    if (role.enfant) return p.silhouette === 'enfant';
+    return true;
+  }
+
   function candidats(role, gens, pris) {
     var libres = gens.filter(function (p) { return !pris[cleDe(p)]; });
     var f = [];
     if (role.archetype) {
-      f = moiDabord(libres.filter(function (p) { return p.archetype === role.archetype; }));
+      f = moiDabord(libres.filter(function (p) {
+        return p.archetype === role.archetype && classe(p, role);
+      }));
+      if (!f.length) {
+        f = moiDabord(libres.filter(function (p) { return p.archetype === role.archetype; }));
+      }
     }
-    if (!f.length && role.adulte) {
-      f = libres.filter(function (p) { return p.silhouette === 'adulte'; });
-    }
-    if (!f.length && role.enfant) {
-      f = libres.filter(function (p) { return p.silhouette === 'enfant'; });
-    }
+    if (!f.length) f = moiDabord(libres.filter(function (p) { return classe(p, role); }));
     return f.length ? f : libres;
   }
   function cleDe(p) { return p.id || ('troupe:' + p.prenom); }
 
+  /* Une graine tirée du nom du rôle : quand plusieurs personnes conviennent
+     aussi bien, ce n'est pas toujours la même qui joue. Sans ça, la première
+     de la liste tenait l'adulte dans huit histoires sur neuf. La graine est
+     stable, donc la distribution reste reproductible. */
+  function graine(s) {
+    var h = 7, i;
+    for (i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 100003;
+    return h;
+  }
+
+  function choisir(pool, g) {
+    if (!pool.length) return null;
+    /* « moi » garde sa priorité : on ne le fait pas tourner */
+    if (pool[0].lien === 'moi') return pool[0];
+    return pool[g % pool.length];
+  }
+
   function distribuer(canevas) {
     var gens = famille(), pris = {}, roles = {};
     canevas.roles.forEach(function (r) {
+      var g = graine(canevas.id + '/' + r.cle);
       /* la famille d'abord, la troupe ensuite — et jamais deux fois la
          même personne dans la même histoire */
-      var c = candidats(r, gens, pris)[0] || candidats(r, TROUPE, pris)[0];
+      var c = choisir(candidats(r, gens, pris), g) ||
+        choisir(candidats(r, TROUPE, pris), g);
       if (!c) c = TROUPE[0];
       pris[cleDe(c)] = true;
       roles[r.cle] = c;

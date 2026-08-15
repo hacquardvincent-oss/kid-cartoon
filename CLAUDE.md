@@ -306,7 +306,16 @@ dessin. Dès qu'un gabarit devient malin, l'écriture devient illisible.
   chaque enfant soit héros d'un bon tiers des histoires. C'est la vraie
   raison du chiffre six.
 * **Une famille vide doit pouvoir lire.** Les rôles sans preneur sont
-  tenus par une troupe de figurants (`TROUPE` dans `histoires.js`).
+  tenus par une troupe de figurants (`TROUPE` dans `histoires.js`), qui
+  couvre elle aussi les six tempéraments côté enfants — sinon le héros
+  d'une histoire d'enfant se retrouve joué par un adulte.
+* **L'archétype décide, mais pas tout seul.** Un rôle qui dit
+  `enfant: true` et qui atterrit sur un adulte donne « Papa refuse de
+  mettre son pull » : drôle une fois, faux les autres. On croise archétype
+  et silhouette avant de retomber sur l'archétype seul.
+* **À qualité égale, on fait tourner.** Une graine tirée du nom du rôle
+  évite que le premier figurant de la liste tienne l'adulte dans huit
+  histoires sur neuf. Elle est stable, donc la distribution reste figée.
 
 ### Thèmes
 
@@ -354,9 +363,11 @@ Les jeux qui se transposent presque sans travail :
    silhouettes plutôt que trois, puisqu'elles étaient toutes prêtes.
 4. **Le gros du travail** : écrire une vingtaine de canevas d'histoires en
    casting par archétype, et vérifier qu'ils tiennent une fois personnalisés.
-   **Commencé** : le format est posé et trois histoires sont écrites
-   (`La tour`, `Le seau rouge`, `Derrière la haie`). Il en manque dix-sept,
-   et il faut qu'elles couvrent les six tempéraments.
+   **En cours** : le format est posé et **neuf histoires** sont écrites,
+   63 planches, toutes passées au contrôle. **Les six tempéraments ont
+   chacun au moins une histoire où il est héros** — c'était la condition
+   pour qu'aucun enfant ne soit spectateur de sa propre application.
+   Il en manque une dizaine pour étoffer les thèmes.
 5. Élargir : silhouettes, garde-robe, décors, archétypes, histoires.
 
 Le point 4 est le cœur du produit et le seul vrai risque. La technique suivra ;

@@ -374,5 +374,442 @@ var CANEVAS = [
           'Le ruban est toujours là.'
       }
     ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'le-pull-qui-gratte',
+    titre: 'Le pull qui gratte',
+    sous: 'quand personne ne te croit',
+    themes: ['Émotions', 'Famille'],
+    minutes: 4,
+    roles: [
+      { cle: 'grognon', archetype: 'grognon', enfant: true },
+      { cle: 'grand', adulte: true },
+      { cle: 'temoin', archetype: 'curieuse', enfant: true }
+    ],
+    planches: [
+      {
+        decor: 'chambre', heure: 'matin',
+        qui: ['grognon', 'grand'],
+        poses: { grognon: 'debout', grand: 'tient' },
+        humeurs: { grognon: 'fache' },
+        fond: [{ t: 'etagere', x: 170, y: 400, s: .85 }],
+        texte: 'Le pull était posé sur le lit. Il était bleu, il était neuf, et ' +
+          '{grand} le trouvait très beau. {grognon} le regarda comme on regarde ' +
+          'une guêpe.'
+      },
+      {
+        decor: 'chambre', heure: 'matin',
+        qui: ['grognon', 'grand'],
+        poses: { grognon: 'montre', grand: 'hausse' },
+        humeurs: { grognon: 'fache' },
+        bulles: [{ qui: 'grognon', t: 'Il gratte !' }],
+        texte: '{grognon} dit qu\'il grattait. {grand} dit que non. Personne ne ' +
+          'demanda au pull.'
+      },
+      {
+        decor: 'chambre', heure: 'matin',
+        qui: ['grognon'],
+        poses: { grognon: 'hausse' }, humeurs: { grognon: 'triste' },
+        texte: '{Il:grognon} le mit quand même, parce qu\'il faisait froid. Puis ' +
+          '{il:grognon} ne dit plus rien du tout. C\'est ce qu\'on fait quand on ' +
+          'n\'est pas cru{e:grognon} : on se tait, et ça gonfle à l\'intérieur. ' +
+          'Ça s\'appelle l\'injustice.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['temoin', 'grognon'],
+        poses: { temoin: 'montre', grognon: 'debout' },
+        humeurs: { grognon: 'triste', temoin: 'surpris' },
+        texte: '{temoin} remarqua que {grognon} se grattait le cou toutes les dix ' +
+          'secondes. {Il:temoin} compta, pour être sûr{e:temoin}. Puis {il:temoin} ' +
+          'alla le dire.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['grand', 'grognon'],
+        poses: { grand: 'tient', grognon: 'debout' },
+        humeurs: { grand: 'surpris' },
+        bulles: [{ qui: 'grand', t: 'Ah. Oui. Il gratte.' }],
+        texte: '{grand} passa la main à l\'intérieur du pull. {Il:grand} fit une ' +
+          'drôle de tête, et {il:grand} le reconnut tout de suite, ce qui n\'est ' +
+          'pas si facile.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['grognon', 'grand'],
+        poses: { grognon: 'brasenlair', grand: 'tient' },
+        humeurs: { grognon: 'content' },
+        texte: 'On mit un tee-shirt sous le pull. Ça prit quatre secondes. ' +
+          '{grognon} avait attendu tout le matin pour ces quatre secondes-là.'
+      },
+      {
+        decor: 'chambre', heure: 'matin',
+        qui: ['grognon'],
+        poses: { grognon: 'debout' },
+        texte: 'Le lendemain, {grognon} remit le pull tout seul{e:grognon}. ' +
+          '{Il:grognon} râla un peu quand même, par habitude. Ça part tout seul, ' +
+          'l\'habitude. Pas tout de suite.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'la-blague-de-trop',
+    titre: 'La blague de trop',
+    sous: 'le moment où ça ne fait plus rire',
+    themes: ['Bêtises', 'Amitié'],
+    minutes: 4,
+    roles: [
+      { cle: 'farceur', archetype: 'farceur', enfant: true },
+      { cle: 'copain', archetype: 'timide', enfant: true }
+    ],
+    planches: [
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['farceur', 'copain'],
+        poses: { farceur: 'tient', copain: 'debout' },
+        fond: [{ t: 'arbre', x: 120, y: 402, s: 1.1 }, { t: 'buisson', x: 690, y: 420, s: 1.1 }],
+        avant: [{ t: 'ballon', x: 700, y: 548, s: 1.1 }],
+        texte: '{farceur} avait une idée. {Il:farceur} en avait toujours une, et ' +
+          'elles finissaient toutes de la même façon.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['copain', 'farceur'],
+        poses: { copain: 'montre', farceur: 'brasenlair' },
+        humeurs: { copain: 'surpris', farceur: 'content' },
+        fond: [{ t: 'buisson', x: 660, y: 420, s: 1.2 }],
+        texte: '{Il:farceur} cacha le ballon de {copain} derrière le buisson. ' +
+          '{copain} chercha partout. Quand le ballon revint, tout le monde rit — ' +
+          '{copain} aussi.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['farceur'],
+        poses: { farceur: 'tient' },
+        fond: [{ t: 'buisson', x: 640, y: 420, s: 1.2 }],
+        texte: 'Une bonne blague, ça se refait. C\'est ce que pensa {farceur}. ' +
+          'C\'est exactement là que {il:farceur} se trompa.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['copain', 'farceur'],
+        poses: { copain: 'assis', farceur: 'tient' },
+        humeurs: { copain: 'triste' },
+        texte: 'La deuxième fois, {copain} ne chercha pas. {Il:copain} s\'assit ' +
+          'dans l\'herbe et {il:copain} ne dit rien. Personne ne rit.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['farceur'],
+        poses: { farceur: 'tient' }, humeurs: { farceur: 'triste' },
+        texte: '{farceur} resta debout avec le ballon dans les mains. {Il:farceur} ' +
+          'avait chaud, et {il:farceur} n\'avait plus envie de rire du tout. ' +
+          'Ça s\'appelle la gêne.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['copain', 'farceur'],
+        poses: { copain: 'tient', farceur: 'hausse' },
+        avant: [{ t: 'ballon', x: 120, y: 548, s: 1.1 }],
+        texte: '{Il:farceur} rendit le ballon. Puis {il:farceur} alla se cacher ' +
+          'derrière le buisson, et {il:farceur} attendit qu\'on vienne le chercher. ' +
+          '{copain} mit très longtemps. Exprès.'
+      },
+      {
+        decor: 'jardin', heure: 'couchant',
+        qui: ['farceur', 'copain'],
+        poses: { farceur: 'montre', copain: 'salue' },
+        bulles: [{ qui: 'farceur', t: 'Je peux te faire une blague ?' }],
+        texte: 'Le lendemain, {farceur} demanda avant. Ça ne marche pas, une blague ' +
+          'qu\'on annonce. On rigola quand même.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'au-bord-du-jeu',
+    titre: 'Au bord du jeu',
+    sous: 'entrer dans un jeu déjà commencé',
+    themes: ['Amitié', 'Grandir'],
+    minutes: 4,
+    roles: [
+      { cle: 'timide', archetype: 'timide', enfant: true },
+      { cle: 'meneur', archetype: 'rapide', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['timide'],
+        poses: { timide: 'debout' },
+        texte: 'Au milieu de la place, il y avait un jeu déjà commencé. {timide} ' +
+          'le regardait depuis le bord. Depuis le bord, on voit très bien.'
+      },
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['timide'],
+        poses: { timide: 'hausse' }, humeurs: { timide: 'triste' },
+        texte: '{Il:timide} avança d\'un pas. Puis {il:timide} recula de deux. ' +
+          'Son ventre faisait un bruit bizarre : ça s\'appelle le trac.'
+      },
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['grand', 'timide'],
+        poses: { grand: 'assis', timide: 'debout' },
+        texte: '{grand} ne dit pas « vas-y ». {Il:grand} s\'assit sur le banc et ' +
+          '{il:grand} regarda ailleurs, ce qui est une façon d\'aider.'
+      },
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['meneur', 'timide'],
+        poses: { meneur: 'montre', timide: 'debout' },
+        humeurs: { meneur: 'content', timide: 'surpris' },
+        bulles: [{ qui: 'meneur', t: 'Tu tiens la corde ?' }],
+        texte: '{meneur} cria son prénom. Pas pour jouer : pour tenir la corde. ' +
+          'Tenir la corde, ça ne demande pas de parler. {timide} y alla.'
+      },
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['timide', 'meneur'],
+        poses: { timide: 'tient', meneur: 'saute' },
+        texte: '{Il:timide} tint la corde pendant longtemps. Puis quelqu\'un prit ' +
+          'sa place sans rien demander, et {il:timide} se retrouva dans le jeu. ' +
+          '{Il:timide} ne s\'en aperçut qu\'après.'
+      },
+      {
+        decor: 'village', heure: 'couchant',
+        qui: ['timide', 'meneur'],
+        poses: { timide: 'brasenlair', meneur: 'court' },
+        texte: 'À la fin, {il:timide} était rouge et décoiffé{e:timide}, comme les ' +
+          'autres. Le trac était toujours là. Il avait seulement changé de place.'
+      },
+      {
+        decor: 'village', heure: 'jour',
+        qui: ['timide'],
+        poses: { timide: 'montre' },
+        texte: 'Le lendemain, il y avait quelqu\'un d\'autre au bord. {timide} le ' +
+          'vit tout de suite. {Il:timide} sait exactement où regarder.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'la-boite-des-choses-en-trop',
+    titre: 'La boîte des choses en trop',
+    sous: 'ce qui n\'a de place nulle part',
+    themes: ['Grandir', 'Règles'],
+    minutes: 4,
+    roles: [
+      { cle: 'rangetout', archetype: 'rangetout', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rangetout'],
+        poses: { rangetout: 'montre' },
+        fond: [{ t: 'etagere', x: 200, y: 400, s: .95 }],
+        avant: [{ t: 'tourcubes', x: 700, y: 552, s: .8, n: 4 }],
+        texte: 'Dans la chambre de {rangetout}, chaque chose avait sa place. Les ' +
+          'cubes avec les cubes. Les livres avec les livres. Et rien, jamais, au ' +
+          'milieu du tapis.'
+      },
+      {
+        decor: 'jardin', heure: 'jour',
+        qui: ['rangetout'],
+        poses: { rangetout: 'tient' }, humeurs: { rangetout: 'content' },
+        avant: [{ t: 'caillou', x: 700, y: 548, s: 1.4 }],
+        texte: 'Un jour, {rangetout} rapporta un caillou. Un caillou n\'est pas un ' +
+          'cube. Un caillou n\'est pas un livre. Un caillou n\'a pas de place.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rangetout'],
+        poses: { rangetout: 'hausse' }, humeurs: { rangetout: 'triste' },
+        texte: '{Il:rangetout} le posa ici. Puis là. Puis dans sa main. Ça ne tenait ' +
+          'nulle part, et ça faisait quelque chose de serré dans la poitrine : ' +
+          'ça s\'appelle l\'inquiétude.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['grand', 'rangetout'],
+        poses: { grand: 'montre', rangetout: 'tient' },
+        humeurs: { rangetout: 'fache' },
+        texte: '{grand} proposa de le jeter. C\'était une très mauvaise idée, et ' +
+          '{il:grand} le comprit à la tête que fit {rangetout}.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['grand', 'rangetout'],
+        poses: { grand: 'tient', rangetout: 'debout' },
+        humeurs: { rangetout: 'surpris' },
+        bulles: [{ qui: 'grand', t: 'Et si on faisait une boîte ?' }],
+        texte: 'On prit une boîte vide. On écrivit dessus, en grosses lettres : ' +
+          'LES CHOSES EN TROP. Le caillou entra dedans.'
+      },
+      {
+        decor: 'chambre', heure: 'jour',
+        qui: ['rangetout'],
+        poses: { rangetout: 'tient' },
+        avant: [{ t: 'caillou', x: 660, y: 550, s: 1.1 },
+          { t: 'coquillage', x: 730, y: 552, s: 1.3 }],
+        texte: 'Le lendemain, il y eut une plume. Puis un bout de ficelle. Puis un ' +
+          'cube tout seul, qui n\'allait plus avec les autres. La boîte se remplit ' +
+          'très vite.'
+      },
+      {
+        decor: 'chambre', heure: 'couchant',
+        qui: ['rangetout'],
+        poses: { rangetout: 'assis' },
+        texte: '{rangetout} ouvre la boîte de temps en temps, pour vérifier. Tout y ' +
+          'est. Ce n\'est pas rangé. Mais ça a une place.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'ce-qui-bouge-la-nuit',
+    titre: 'Ce qui bouge la nuit',
+    sous: 'le noir n\'est pas vide',
+    themes: ['Nuit', 'Dehors'],
+    minutes: 4,
+    roles: [
+      { cle: 'curieuse', archetype: 'curieuse', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'chambre', heure: 'nuit',
+        qui: ['curieuse'],
+        poses: { curieuse: 'assis' }, humeurs: { curieuse: 'surpris' },
+        texte: 'Le soir, dans le jardin, il y a des bruits. {curieuse} les entendait ' +
+          'depuis son lit. Un qui craque, un qui frotte, et un troisième qu\'on ne ' +
+          'peut pas décrire.'
+      },
+      {
+        decor: 'chambre', heure: 'nuit',
+        qui: ['curieuse', 'grand'],
+        poses: { curieuse: 'montre', grand: 'debout' },
+        bulles: [{ qui: 'curieuse', t: 'Je veux voir.' }],
+        texte: '{Il:curieuse} ne demanda pas à être rassuré{e:curieuse}. ' +
+          '{Il:curieuse} demanda à voir. Ce n\'est pas du tout la même chose.'
+      },
+      {
+        decor: 'jardin', heure: 'nuit',
+        qui: ['grand', 'curieuse'],
+        poses: { grand: 'tient', curieuse: 'debout' },
+        fond: [{ t: 'arbre', x: 120, y: 402, s: 1.1, color: '#3f6b4a' }],
+        avant: [{ t: 'lampion', x: 700, y: 300, s: 1.6 }],
+        texte: '{grand} dit oui. Cinq minutes, et on rentre. {Il:grand} prit une ' +
+          'lampe et une veste, et {il:grand} mit ses chaussures à l\'envers, parce ' +
+          'qu\'il était tard.'
+      },
+      {
+        decor: 'jardin', heure: 'nuit',
+        qui: ['curieuse'],
+        poses: { curieuse: 'hausse' }, humeurs: { curieuse: 'surpris' },
+        texte: 'Dehors, le noir n\'était pas noir. Il était bleu. {curieuse} eut peur ' +
+          'quand même : ça s\'appelle la peur du noir, et ça marche aussi quand le ' +
+          'noir est bleu.'
+      },
+      {
+        decor: 'jardin', heure: 'nuit',
+        qui: ['curieuse', 'grand'],
+        poses: { curieuse: 'montre', grand: 'montre' },
+        avant: [{ t: 'herisson', x: 690, y: 546, s: 1.3 }],
+        texte: 'On chercha les bruits un par un. Le qui craque, c\'était la branche. ' +
+          'Le qui frotte, c\'était un hérisson, très occupé, qui ne leva même pas ' +
+          'la tête.'
+      },
+      {
+        decor: 'jardin', heure: 'nuit',
+        qui: ['curieuse', 'grand'],
+        poses: { curieuse: 'debout', grand: 'hausse' },
+        bulles: [{ qui: 'grand', t: 'Il en reste toujours un.' }],
+        texte: 'Le troisième bruit, on ne le trouva pas. {curieuse} fit remarquer ' +
+          'qu\'il en restait un.'
+      },
+      {
+        decor: 'chambre', heure: 'nuit',
+        qui: ['curieuse'],
+        poses: { curieuse: 'assis' }, humeurs: { curieuse: 'content' },
+        texte: 'Le lendemain soir, {curieuse} écouta encore. Les bruits étaient les ' +
+          'mêmes. {Il:curieuse} laissa la porte ouverte quand même.'
+      }
+    ]
+  },
+
+  /* ---------------------------------------------------------- */
+  {
+    id: 'jusqu-au-poteau',
+    titre: 'Jusqu\'au poteau',
+    sous: 'attendre, quand on est rapide',
+    themes: ['Règles', 'Dehors'],
+    minutes: 4,
+    roles: [
+      { cle: 'rapide', archetype: 'rapide', enfant: true },
+      { cle: 'grand', adulte: true }
+    ],
+    planches: [
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['rapide', 'grand'],
+        poses: { rapide: 'court', grand: 'debout' },
+        texte: 'On partit se promener. {rapide} partit devant, comme toujours. Et ' +
+          'comme toujours, {il:rapide} fut le premier à ne plus voir personne.'
+      },
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['rapide'],
+        poses: { rapide: 'hausse' },
+        texte: '{Il:rapide} s\'arrêta au bout du chemin. {Il:rapide} attendit. ' +
+          'Attendre, quand on est rapide, c\'est comme tenir un ballon sous l\'eau. ' +
+          'Ça s\'appelle l\'impatience.'
+      },
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['rapide'],
+        poses: { rapide: 'court' }, humeurs: { rapide: 'surpris' },
+        texte: 'Alors {il:rapide} repartit. Et cette fois, quand {il:rapide} se ' +
+          'retourna, le chemin était vide dans les deux sens.'
+      },
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['rapide'],
+        poses: { rapide: 'debout' }, humeurs: { rapide: 'fache' },
+        texte: '{Il:rapide} n\'eut pas peur, pas tout de suite. {Il:rapide} en voulut ' +
+          'à ses jambes, ce qui est encore plus fatigant que d\'avoir peur.'
+      },
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['grand', 'rapide'],
+        poses: { grand: 'montre', rapide: 'debout' },
+        humeurs: { rapide: 'triste' },
+        bulles: [{ qui: 'grand', t: 'Tu vas jusqu\'au poteau, et tu attends.' }],
+        texte: '{grand} arriva sans courir, ce qui était une manière de dire quelque ' +
+          'chose. La règle fut très courte, et il n\'y eut pas de discussion.'
+      },
+      {
+        decor: 'route', heure: 'jour',
+        qui: ['rapide'],
+        poses: { rapide: 'debout' },
+        texte: '{rapide} fonça jusqu\'au poteau. Puis {il:rapide} attendit. C\'était ' +
+          'très long. Le poteau ne bougeait pas, {lui:rapide} non plus.'
+      },
+      {
+        decor: 'route', heure: 'couchant',
+        qui: ['rapide', 'grand'],
+        poses: { rapide: 'montre', grand: 'salue' },
+        texte: 'Maintenant il y a un poteau à chaque promenade. Ce n\'est jamais le ' +
+          'même. {rapide} le trouve toujours en premier.'
+      }
+    ]
   }
 ];
